@@ -1,0 +1,46 @@
+\documentclass[onecolumn, twoside, a4paper, 11pt]{memoir}
+
+% Palatino font for rm family
+\usepackage{newpxtext,newpxmath}
+
+\renewcommand*\sfdefault{cmss}
+
+% URL styles
+\usepackage{url}
+\urlstyle{sf}
+
+% Math
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Graphics
+\usepackage{graphicx}
+\graphicspath{{figs/}}
+
+% Tikz
+\usepackage{tikz}
+
+% Colors
+\definecolor{darkblue}{HTML}{00688B}
+\definecolor{cadet}{HTML}{DAE1FF}
+
+% Double hlines
+\usepackage{hhline}
+
+\begin{document}
+
+\begin{titlingpage}
+  \centering
+  {\Huge \bfseries \scshape
+    Introduction to \\[0.2\baselineskip] Supercomputing} \\[2\baselineskip]
+  {\Large TMA4280} \\[0.7\textheight]
+  \copyright \\
+  Einar R{\o}nquist \\
+  Arne Morten Kvarving \\
+  Eivind Fonn
+\end{titlingpage}
+
+\chapter{Introduction}
+\input{01-introduction}
+
+\end{document}

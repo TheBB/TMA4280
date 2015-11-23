@@ -1,0 +1,7 @@
+/notes/notes.pdf
+*.log
+*.fls
+*.fdb_latexmk
+*.aux
+*/auto/*.el
+*.gz
