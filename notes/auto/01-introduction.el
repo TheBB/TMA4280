@@ -8,11 +8,9 @@
     "fig:fp"
     "maxnumber"
     "minnumber"
-    "fig:perform_dev"
-    "fig:proj_perform_dev"
-    "tab:history_ntnu"
-    "fig:njord-2"
-    "fig:njord-1"
+    "fig:perform-dev"
+    "tab:history-ntnu"
+    "fig:njord"
     "fig:met"
     "fig:climate")))
 

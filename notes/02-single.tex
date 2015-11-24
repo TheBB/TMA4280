@@ -1,0 +1,627 @@
+\chapter{Single processor systems}
+
+\section{A prototypical processor}
+
+We start by explaining some of the basic tasks performed by a single processor.
+The comments are particularly relevant for the MIPS R14000 processor used in a
+previous supercomputer at NTNU (called \emph{Gridur}, a SGI Origin 3000 system
+used in the period 2001--2007). The MIPS processor is an example of a processor
+implementing a RISC architecture (RISC---\emph{Reduced Instruction Set
+Computer}), which has been a very important processor design over the past
+couple of decades. We will later return to comment on the POWER5 processor
+used in the previous supercomputer at NTNU, in particular some of the key
+differences compared to the processor discussed in this section. The name POWER
+refers to {\em Performance Optimization With Enhanced RISC}, and is also the
+name of a series of microprocessors designed by IBM.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+    block/.style={
+      draw=darkblue,
+      fill=cadet,
+      shape=rectangle,
+      rounded corners=1mm,
+      text height=1.5ex,
+      text depth=.25ex,
+    },
+    l1/.style={
+      minimum height=8mm,
+      minimum width=4cm,
+    },
+    ops/.style={
+      minimum height=8mm,
+      minimum width=4cm,
+      align=right,
+    },
+    inst/.style={
+      minimum height=28mm,
+      minimum width=16mm,
+    },
+    line/.style={
+      thick,
+      draw=darkblue,
+    }]
+    \node[block, l1] (L1inst) {L1 Instruction Cache};
+    \node[block, l1, right=15mm of L1inst] (L1data) {L1 Data Cache};
+    \node[block, l1, above=8mm of L1inst] (Rest) {RAM, disk, network};
+    \node[block, l1, above=8mm of L1data] (L2) {L2 cache};
+    \node[block, ops, below=16mm of L1data.east, anchor=east] (LS) {Load and store};
+    \node[block, ops, below=10mm of LS.east, anchor=east] (Int) {Integer};
+    \node[block, ops, below=10mm of Int.east, anchor=east] (Float) {Floating point};
+    \node[block, inst, below=26mm of L1inst.east, anchor=east] (Decode) {Decode};
+    \node[block, inst, below=26mm of L1inst.west, anchor=west] (Branch) {Branch};
+    \node[block, inst, below=2mm of Decode, minimum height=8mm] (Clock) {Clock};
+
+    \draw[line, <->] (Rest.east) -- (L2.west);
+    \draw[line, <->] (L1inst.east) -- (L1data.west);
+    \draw[line, <->] (L1data.south) -- (LS.north);
+    \draw[line, ->] (Decode.east) -- (Int.west);
+    \draw[line, ->] ([yshift=10mm]Decode.east) -- (LS.west);
+    \draw[line, ->] ([yshift=-10mm]Decode.east) -- (Float.west);
+    \draw[line, ->] (Decode.west) -- (Branch.east);
+    \draw[line, ->] ([xshift=12mm]L1inst.south) -- (Decode.north);
+    \draw[line, <-] ([xshift=-12mm]L1inst.south) -- (Branch.north);
+    \draw[line] ($(L1inst.east)!0.5!(L1data.west)$) -- ($(Rest.east)!0.5!(L2.west)$);
+  \end{tikzpicture}
+  \caption{
+    A prototypical processor, including the MIPS R14000 used in \emph{Gridur},
+    the supercomputer at NTNU during the period 2001--2007.
+  }
+  \label{fig:Lande}
+\end{figure}
+
+In order to introduce some key concepts in the RISC architecture, let us briefly
+explain what happens when we perform the following simple operation
+\begin{align}
+  c = a + b.
+  \label{single:add1}
+\end{align}
+Here, we want the processor to add the two numbers $a$ and $b$ and store the
+answer in $c$. In this case, $a$ and $b$ are referred to as \emph{operands},
+while $+$ is the \emph{operator}. Hence, the simple addition of two scalars
+implies a single floating point operation.
+
+The basic unit of ``time'' for our processor is a clock cycle. The state of the
+processor changes from clock cycle to clock cycle, depending on what needs to be
+done. Different parts/units of the processor work on different tasks
+independently of each other. These tasks may correspond to different
+instructions, each in a particular phase of completion.
+
+Consider again the addition of two scalars. The operation \eqref{single:add1}
+may be part of a larger program involving many operations (or instructions). Let
+us assume that the instruction for the ``add'' operation is currently in a small
+memory module denoted as L1 cache (for instructions). When the execution of our
+program is ready to perform this operation, the instruction is brought into a
+decoder and made ready for execution. The addresses of the operands ($a$ and
+$b$) are computed and the operands are brought into two registers of the
+processors. We assume that the operands are available in the small memory module
+called L1 cache (for data).
+
+The operands are then directed from the two registers to the floating point unit
+for addition (denoted as FPAdd) where the two numbers are added together. The
+whole operation takes just a few clock cycles. For the MIPS R14000 processor,
+this operation takes five clock cycles:
+\begin{enumerate}
+\item read from register
+\item align
+\item add
+\item pack
+\item write to register
+\end{enumerate}
+Note that the number of clock cycles required to perform this operation is not
+the same as the number of bits used to store our operands (e.g., 64 bits in
+double precision). The reason is that the data flow in the processor happens
+along a ``wide bus'' capable of moving all the bits at the same time. This is an
+example of bit-level parallelism. Older processors could only move 4, 8, 16, and
+32 bits at a time and an add operation therefore took additional clock cycles to
+complete. In addition, current processors have a much higher clock frequency (or
+shorter clock period) compared to older processors.
+
+Let us now make a few more remarks regarding the processor in
+\autoref{fig:Lande}. We have already mentioned the floating point unit for
+addition, FPAdd. However, the processor has also other functional units. For
+example, the R14000 prosessor has five functional units which can operate
+independently from each other:
+\begin{itemize}
+\item Load/Store: computes memory addresses and to bring operands to and from
+the memory;
+\item ALU1: a unit for addition and subtraction of integers, and logical
+operations;
+\item ALU2: a unit for addition, subtraction, multiplication, and division of
+integers, as well as logical operations;
+\item FPAdd: adds of floating point numbers;
+\item FPMult: a unit for multiplication, division, and square root of floating
+point numbers.
+\end{itemize}
+Note that the operands used in these functional units need to come from the
+registers in the processor. If the operands are not in the registers, they have
+to be brought from the memory into the registers with a {\em load} operation.
+The answer (or output) from the functional units are also stored in registers
+and subsequently stored in the memory with a {\em store} operation.
+
+\section{Memory hierarchy}
+
+The example from the previous section involving the addition of two floating
+point numbers assumed that the instruction for the operation \eqref{single:add1}
+was in the memory module denoted as L1 cache for instructions; see
+\autoref{fig:Lande}. Similarly, we assumed that the operands $a$ and $b$ were
+available in the memory module denoted as L1 cache for data.
+
+Let us now comment a bit more on what happens if these assumptions are not true.
+In this case, the program will check whether the instruction or data are
+available in the memory module denoted as L2 cache in Figure \ref{fig:Lande}.
+This is a memory module which is larger than L1 cache. Furthermore, the L2 cache
+is not split into a separate module for instructions and a separate module for
+data. It also takes longer (meaning more clock cycles) to fetch data from L2
+cache compared to L1 cache. It could also happen that the instruction and the
+data the program is looking for is not available in L2 cache either. In this
+case data has to be brought in from main memory (RAM) or perhaps even further
+away (e.g. the local disk).
+
+Bringing instructions and data to and from memory (from cache, RAM, etc.) is
+typically a bottleneck in scientific computing. The processors are getting
+faster and faster, but the memory bandwidth (or transfer rate in bytes per
+second) is not keeping up at a similar speed. Hence, for certain operations, the
+processor can become ``starved'' for data, meaning that it is idle for much of
+the time while waiting for data to be transferred to and from memory. The
+overall performance in terms of floating point operations per second will in
+such cases not be governed by the processor speed, but by the memory access
+time.
+
+In order to ``hide'' this difference in speed (i.e., processor speed versus
+memory access speed), the memory is organized in a hierarchical fashion;
+see \autoref{fig:MemoryHierarchy}.
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[
+    line/.style={
+      thick,
+      draw=darkblue,
+    }]
+    \coordinate (A) at (-4.5,0) {};
+    \coordinate (B) at (4.5,0) {};
+    \coordinate (C) at (0,7.4) {};
+    \fill[cadet] (A) -- (B) -- (C);
+    \draw[line, name path=AC] (A) -- (C);
+    \draw[line, name path=BC] (B) -- (C);
+    \foreach \y/\A in
+    {0/Tape, 1/Distributed memory, 2/Local disk, 3/Main memory (RAM), 4/Cache, 5/Registers, 6/CPU}
+    {
+      \path[name path=horiz] (A|-0,\y) -- (B|-0,\y);
+      \draw[line, name intersections={of=AC and horiz,by=P},
+      name intersections={of=BC and horiz,by=Q}] (P) -- (Q)
+      node[midway, above=1mm, text height=1.5ex, text depth=.25ex] {\A};
+    }
+  \end{tikzpicture}
+  \caption{
+    The memory hierarchy of a computer system. Higher entries are faster, while
+    lower entries are cheaper and larger.
+  }
+  \label{fig:MemoryHierarchy}
+\end{figure}
+The fastest part of the memory is closest to the CPU. For example, on the MIPS
+R14000, the L1 cache is on the chip. This part of the memory is fast, but also
+small because it is very expensive. In contrast, the main memory is much larger,
+but has also a much longer access time; see \autoref{tbl:cycles}. We will later
+discuss in more detail how it is decided what should be in the L1 and L2 cache.
+
+\begin{table}
+  \centering
+  \caption{
+    Typical memory access times for R14000. The numbers represent number of
+    clock cycles.
+  }
+  \label{tbl:cycles}
+  \bgroup\def\arraystretch{1.2}
+  \begin{tabular}{rl}
+    \hline
+    Memory type & Clock cycles \\ \hhline{==}
+    Registers & $1$ \\ \hline
+    L1 cache & $2$--$3$ \\ \hline
+    L2 cache & $10$--$12$ \\ \hline
+    Main memory &  $100$--$200$ \\ \hline
+    Message passing & $\mathcal{O}(10^3)$--$\mathcal{O}(10^4)$ \\ \hline
+    Local disk & $\mathcal{O}(10^6)$ \\ \hline
+  \end{tabular}
+  \egroup
+\end{table}
+
+We remark that message passing in \autoref{tbl:cycles} refers to communication
+between individual processors by sending messages over a network; we will return
+to a discussion of multiple processors later.
+
+\section{Pipelining/vectorization}
+
+Assume now that, instead of (\ref{single:add1}), we would like to add the two
+vectors $\bm a$ and $\bm b$ of length $n$ and store the result in a vector $\bm
+c$, i.e.
+\begin{align}
+  \bm c = \bm a + \bm b.
+  \label{single:addn}
+\end{align}
+We can also write \eqref{single:addn} as the loop (in FORTRAN)
+\begin{lstlisting}[style=fortran]
+  for i=1,n
+    c(i) = a(i) + b(i)
+  end
+\end{lstlisting}
+Again, we start by assuming that the data are available in the registers. From
+there, the individual vector elements $a(i)$ and $b(i)$ enter the floating point
+unit FPAdd where the numbers are added to produce the output elements $c(i)$,
+$i=1,\ldots,n$.
+
+We mentioned earlier that it takes five clock cycles to add two floating point
+numbers together. This would perhaps suggest that the total number of clock
+cycles for the operation \eqref{single:addn} is $5n$, and that the total
+execution time therefore is $5n\tau$ where $\tau$ is the clock period. However,
+if things are done optimally, the total number of clock cycles can be reduced to
+approximately $n$ for $n\gg 1$. The reason for this is that the five stages in
+the adder correspond to independent tasks. This means that, as soon as the
+addition of two operands (i.e. $a(i)$ and $b(i)$) has finished the first stage,
+two new operands ($a(i+1)$ and $b(i+1)$) can enter the first stage in the adder.
+Hence, after five clock cycles, the first number $c(1)$ in the operation
+\eqref{single:addn} is ready, while the numbers $c(2)$, $c(3)$, $c(4)$, $c(5)$,
+and $c(6)$ are in different phases of completion in the adder.
+
+In summary, after a few clock cycles to ``fill up'' the adder, a new answer
+$c(i), i=2,\ldots,n$ is ready every clock cycle. This is what is referred to as
+\emph{pipelining} (or sometimes \emph{vectorization}). The reason behind this
+term is quite obvious: we constantly feed the floating point unit (in this case,
+the adder) so that the ``pipeline'' is always full. In other words, we do not
+wait until one answer is ready before we start the process of adding two new
+numbers. In this way, we achieve a certain level of parallelism in the sense
+that asymptotically (for long vector lengths), the adder works simultaneously on
+five different pairs of operands.
+
+The above discussion assumed that the data (i.e. the operands $a(i)$ and $b(i)$,
+$i=1,\ldots,n$) are ready for the adder with no delay. Whether this is possible
+or not depends on the particular processor. In the case of the MIPS R14000
+processor it is not possible to achieve this performance. The reason is that,
+in the best case, only a single floating point number can be brought between the
+memory (L1 cache) and a register at a time. Since we need to fetch two operands,
+$a(i)$ and $b(i)$, per floating point operation, and store the answer $c(i)$
+back to memory, a minimum of three clock cycles are needed for memory transfer
+per addition. Hence, even though the floating point unit (the adder) can
+theoretically complete one addition per clock cycle, the memory traffic will be
+the bottleneck, at least for large $n$.
+
+The only possibility for achieving a better performance is if all the operands
+are already available in the processors registers. However, since a processor
+only has a limited number of registers (on the MIPS R14000 the number of
+registers is 64), such performance cannot be acheived if $n \gg 1$.
+
+Let us now predict the optimal performance for the operation \eqref{single:addn}
+in the case $n \gg 1$ on Gridur. The clock cycle for each processor is 500 MHz.
+Hence, the clock period is 2 ns. Since each floating point operation will
+asymptotically require three clock cycles due to the fetch and store operations
+(see the discussion above), each floating point operation will at least require
+three clock cycles, or 6 ns. Hence, the maximum performance for the operation
+\eqref{single:addn} is $(6\cdot 10^{-9})^{-1}$ floating point operations per
+second, or approximately 167 MFlops. In practice, less performance may be
+achieved, in particular if the operands need to first be brought in from deeper
+layers of the memory hierarchy; see \autoref{fig:MemoryHierarchy}.
+
+\section{Superscalar operations}
+
+Consider now a modification of the operation \eqref{single:addn} to the
+following operation:
+\begin{align}
+  \bm c = \bm a + \gamma \bm b.
+  \label{single:addmultn}
+\end{align}
+Here, each vector element $b(i)$, $i=1,\ldots,n$ is multiplied with a scalar,
+$\gamma$, before being added to $a(i)$. Similar to the operation
+\eqref{single:addn} the result of each addition is stored as the vector element
+$c(i)$.
+
+The new operation here is the multiplication. As mentioned earlier, each R14000
+processor has a separate floating point unit for multiplication, FPMult. Similar
+to the add operation, multiplying two numbers also take five clock cycles:
+\begin{enumerate}
+\item read from register
+\item multiply
+\item sum product
+\item pack
+\item write to register
+\end{enumerate}
+Hence, all the comments made in the previous section for the operation
+\eqref{single:addn} also apply if the add operation $+$ is replaced by
+multiplication $\times$.
+
+Let us now comment on what happens when we combine both multiplication and
+addition as in \eqref{single:addmultn}. Again, let us first assume that all the
+data are readily available (i.e. stored in the registers). The vector elements
+$b(i)$ are brought to the multiplier where each element is multiplied by the
+scalar $\gamma$; see Figure \autoref{fig:SuperScalar}. After a startup time of
+five clock cycles, a new answer is coming out from the multiplier every clock
+cycle. We assume here that the pipelining feature is exploited.
+
+\begin{figure}[htbp]
+  \centering
+  % \begin{center}
+  %   \includegraphics[scale=0.9]{SuperScalar}
+  % \end{center}
+  \begin{tikzpicture}[
+    block/.style={
+      draw=darkblue,
+      fill=cadet,
+      shape=rectangle,
+      rounded corners=1mm,
+      minimum height=12mm,
+      minimum width=12mm,
+    },
+    pinin/.style={pin edge={to-, thick, darkblue}},
+    pinout/.style={pin edge={-to, thick, darkblue}},
+    ]
+    \node[block, pin={[pinin]above:$\gamma$}, pin={[pinin]left:$b(i)$}] (mult) {$\times$};
+    \node[block, right=20mm of mult, pin={[pinin]above:$a(i)$}, pin={[pinout]right:$c(i)$}] (add) {$+$};
+    \draw[darkblue, ->, thick] (mult.east) -- (add.west);
+  \end{tikzpicture}
+  \caption{The superscalar operation multiply and add.}
+  \label{fig:SuperScalar}
+\end{figure}
+
+Each output from the multiplier is now channeled directly as an input to the
+adder where it is added to the vector element $a(i)$. After another five clock
+cycles, the answer $c(i)$ is ready. Hence, after a startup time of 10 clock
+cycles (5 for the multiplier and 5 for the adder), we get one complete answer
+$c(i), \, i=1,\ldots,n$ as output every clock cycle. Asymptotically (i.e., for
+large vector lengths), the theoretical performance is therefore two floating
+point operations per clock cycle. This way of piping the output from one
+floating point unit into the input for another unit is denoted as
+\emph{superscalar} capability. Similar to the pipelining feature of the adder
+and the multiplier, the superscalar capability offers yet another possibility of
+parallelism in the sense that each single processor is capable of performing
+addition and multiplication at the same time (for sufficiently long vector
+lengths).
+
+In practice, the processor has only a limited number of registers, and we need
+to fetch the operands from memory (L1 cache) and store the answers in memory.
+Similar to the operation \eqref{single:addn}, each complete vector element
+$c(i)$ will require three clock cycles due to the memory traffic. However, in
+contrast to the operation \eqref{single:addn}, the operation
+\eqref{single:addmultn} implies two floating point operations instead of one for
+each complete vector element $c(i)$. The maximum single-process performance we
+can obtain on R14000 for \eqref{single:addmultn} is thus twice the performance
+for \eqref{single:addn}, i.e. 333 MFLOPS.
+
+\section{Cache}
+
+Let us now discuss in more detail the interaction between the cache and the main
+memory. The main purpose of the cache is to keep copies of data in extra (and
+fast) memory close to the CPU in order to ``hide'' the relatively slow transfer
+rate between the main memory and the processor.
+
+Because fast caches are expensive, they tend to be small. As an example, we give
+the memory sizes for the R14000 processors. On Gridur, four individual
+processors shared up to 4 Gbytes of main memory. Each processor had an L2 cache
+of size 8 Mbytes and two L1 caches (one for instructions and one for data), each
+only of size 32 Kbytes. Hence, the L1 cache for data can only hold up to 4000
+floating point numbers (assuming double precision), which is relatively small in
+the context of simulating systems with thousands or millions of unknowns (e.g.,
+for the numerical solution of partial differential equations). The L2 cache can
+hold more data, but the transfer rate is a little bit longer compared to the L1
+cache; see \autoref{tbl:cycles}.
+
+The cache is smaller than the main memory by some power of two. Hence, a
+strategy for mapping memory locations to cache locations needs to be defined. We
+describe three strategies for doing this.
+
+\subsection{Direct mapped cache}
+
+One strategy is to use what is refered to as a \emph{direct mapped cache}. In
+this case, each location in main memory corresponds to a unique location in
+cache; see \autoref{fig:DirectMappedCache}. The main memory address is split
+into two parts: the first bits of the memory address are called the \emph{set
+bits} and these bits give the precise cache address. The remaining bits are
+called the \emph{tag bigs}, and these are used to determine if a copy of the
+content at the particular main memory location has been copied into the cache
+location given by the set bits. With this strategy we see that several main
+memory addresses map to the same cache address.
+\[
+  \text{Memory address} =
+  \underbrace{b_1 \ldots b_k}_{\text{tag bits}}
+  \underbrace{b_{k+1} \ldots b_{N}}_{\text{cache address}}.
+\]
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.3]
+    \def \n {7};
+    \def \k {3};
+    \def \q {1};
+    \def \s {3};
+
+    \foreach \i [
+      evaluate=\i as \R using -(\n+1)*\i,
+      evaluate=\i as \L using -(\n+1)*(\i+1),
+    ] in {0,...,\k}
+    {
+      \fill[cadet] (\R-\q, 0) -- (\R-\q, -2) -- (\R-\q-1, -2) -- (\R-\q-1, 0) -- (\R-\q, 0);
+      \fill[salmon] (\R-\s, 0) -- (\R-\s, -2) -- (\R-\s-1, -2) -- (\R-\s-1, 0) -- (\R-\s, 0);
+      \draw[darkblue, very thick] (\R, 0) -- (\R, -2) -- (\L, -2) -- (\L, 0) -- (\R, 0);
+      \foreach \j [
+        evaluate=\j as \l using \R-\j
+      ] in {1,...,\n}
+      {
+        \draw[darkblue, very thin] (\l, 0) -- (\l, -2);
+      }
+    }
+
+    \fill[cadet] (-\q, 3) -- (-\q, 1) -- (-\q-1, 1) -- (-\q-1, 3) -- (-\q, 3);
+    \fill[salmon] (-\s, 3) -- (-\s, 1) -- (-\s-1, 1) -- (-\s-1, 3) -- (-\s, 3);
+    \draw[darkblue, very thick] (0, 3) -- (0, 1) -- (-\n-1, 1) -- (-\n-1, 3) -- (0, 3);
+    \foreach \j in {1,...,\n} {
+      \draw[darkblue, very thin] (0-\j, 3) -- (0-\j, 1);
+    }
+
+    \node[anchor=west] at (0, -1) {RAM};
+    \node[anchor=west] at (0, 2) {Cache};
+  \end{tikzpicture}
+  \caption{
+    A direct mapped cache. Each main memory address maps to a unique and
+    pre-determined location in the cache.
+  }
+  \label{fig:DirectMappedCache}
+\end{figure}
+
+When some particular data is requested by the program, e.g., a floating point
+number, the processor will check whether the data is stored in L1 cache. It does
+this by looking up the cache address (taking the least significant bits of the
+memory address) and checking whether the tag bits at that location match the tag
+bits of the memory address. If is not in L1 cache, the processor will check
+whether the data is stored in L2 cache. If this is the case, the requested data
+will be copied from the L2 cache into L1 cache. If the data is not in L2 cache
+either, the data will have to be brought in from main memory. In this case, a
+copy will be made in L2 cache as well as in L1 cache. In either case, the tag
+bits at the given cache address will be updated to match the new mapped
+location.
+
+Note that when a floating point number (or an integer) is requested by the
+program, more than a single number is copied into cache. The minimum amount of
+data copied is called a {\em cache line}. For the R14000 processor, the cache
+line for the L1 cache is 32 bytes (corresponding to four floating point numbers
+in double precision), while the cache line for the L2 cache is 128 bytes
+(corresponding to 16 floating point numbers in double precision). The extra
+numbers copied are the numbers in the adjacent memory locations in main memory.
+
+Consider again the operation \eqref{single:addn}. Assume that the vectors $\bm
+a$, $\bm b$ and $\bm c$ represent floating point numbers in double precision,
+and that the vectors are stored after each other in main memory. Let the vector
+length $n=4000$, i.e. each vector will precisely fill the L1 data cache. For
+every element $c(i)$ computed, the operands $a(i)$ and $b(i)$ will need to be
+brought in all the way from main memory due to the fact that $a(i)$, $b(i)$ and
+$c(i)$ happen to have the same cache address. A severe drop in performance will
+be observed in this case. This situation is refered to as cache trashing; see
+\autoref{fig:CacheTrashing}.
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.3]
+    \def \n {7};
+    \def \k {3};
+    \def \q {1};
+
+    \foreach \i [
+      evaluate=\i as \R using -(\n+1)*\i,
+      evaluate=\i as \L using -(\n+1)*(\i+1),
+    ] in {0,...,\k}
+    {
+      \fill[cadet] (\R-\q, 0) -- (\R-\q, -2) -- (\R-\q-1, -2) -- (\R-\q-1, 0) -- (\R-\q, 0);
+      \draw[darkblue, very thick] (\R, 0) -- (\R, -2) -- (\L, -2) -- (\L, 0) -- (\R, 0);
+      \foreach \j [
+        evaluate=\j as \l using \R-\j
+      ] in {1,...,\n}
+      {
+        \draw[darkblue, very thin] (\l, 0) -- (\l, -2);
+      }
+    }
+
+    \fill[cadet] (-\q, 3) -- (-\q, 1) -- (-\q-1, 1) -- (-\q-1, 3) -- (-\q, 3);
+    \draw[darkblue, very thick] (0, 3) -- (0, 1) -- (-\n-1, 1) -- (-\n-1, 3) -- (0, 3);
+    \foreach \j in {1,...,\n} {
+      \draw[darkblue, very thin] (0-\j, 3) -- (0-\j, 1);
+    }
+
+    \node[anchor=west] at (0, -1) {RAM};
+    \node[anchor=west] at (0, 2) {Cache};
+    \node[anchor=north] at (-\q-0.5, -2) {\scriptsize $a(i)$};
+    \node[anchor=north] at (-\n-1-\q-0.5, -2) {\scriptsize $b(i)$};
+    \node[anchor=north] at (-\n-\n-2-\q-0.5, -2) {\scriptsize $c(i)$};
+    \node[anchor=south] at (-\q-0.5, 3) {\scriptsize ??};
+  \end{tikzpicture}
+  \caption{
+    Cache trashing. The corresponding elements in the vectors $\bm a$, $\bm b$
+    and $\bm c$ all map to the same cache address.
+  }
+  \label{fig:CacheTrashing}
+\end{figure}
+
+Cache trashing can be avoided by storing the elements in the vectors $\bm a$,
+$\bm b$ and $\bm c$ in a different way; see Figure \ref{fig:AdjacentMemory}. We
+remark that the crash trashing example given here is perhaps not likely to
+happen. Nonetheless, it illustrates the point that severe performance
+degradation is possible to observe due to undesirable memory traffic.
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={
+      text height=1.5ex,
+      text depth=.25ex,
+    }
+    ]
+    \draw[darkblue, very thick] (-6, 0) -- (6, 0);
+    \draw[darkblue, very thick] (-6, 1) -- (6, 1);
+    \draw[darkblue, very thin] (-3, 0) -- (-3, 1);
+    \draw[darkblue, very thin] (-2, 0) -- (-2, 1);
+    \draw[darkblue, very thin] (-1, 0) -- (-1, 1);
+    \draw[darkblue, very thin] (0, 0) -- (0, 1);
+    \draw[darkblue, very thin] (1, 0) -- (1, 1);
+    \draw[darkblue, very thin] (2, 0) -- (2, 1);
+    \draw[darkblue, very thin] (3, 0) -- (3, 1);
+    \node at (-3.5, 0.5) {\footnotesize $\cdots$};
+    \node at (-2.5, 0.5) {\footnotesize $a_i$};
+    \node at (-1.5, 0.5) {\footnotesize $b_i$};
+    \node at (-0.5, 0.5) {\footnotesize $c_i$};
+    \node at (0.5, 0.5) {\footnotesize $a_{i+1}$};
+    \node at (1.5, 0.5) {\footnotesize $b_{i+1}$};
+    \node at (2.5, 0.5) {\footnotesize $c_{i+1}$};
+    \node at (3.5, 0.5) {\footnotesize $\cdots$};
+  \end{tikzpicture}
+  \caption{Adjacent memory layout.}
+  \label{fig:AdjacentMemory}
+\end{figure}
+
+\subsection{Fully associative cache}
+
+To avoid the possibility of cache trashing, we can use a different cache
+strategy called a \emph{fully associative cache}. In a fully associative cache,
+each cache address can map to any memory address. This is essentially a direct
+mapped cache where all the bits are used as tag bits and no bits are used as a
+cache address.
+
+To find the corresponding cache location for a given memory address, the tag
+bits of all cache locations must be checked. This is typically done in parallel
+using dedicated hardware, which is rather complicated. For this reason, fully
+associative caches are rarely seen.
+
+When the cache is full, a cache line must be evicted to make way for new data.
+How this happens depends on the replacement policy:
+\begin{itemize}
+\item Least recently used (LRU);
+\item Least frequently used (LFU);
+\item Random
+\end{itemize}
+In the context of numerical solution of partial differential equations, the
+alternative \emph{LRU} generally gives the best performance. This can be
+understood by the fact that such problems typically exhibit significant locality
+in time and space: data that has recently been used has a high chance of being
+used again in the near future; and data close (in space) to recently used data
+has a high chance of being used in the near future.
+
+\subsection{Set-associative cache}
+
+A \emph{set-associative} cache is a nice compromise between a direct mapped
+cache and a fully associative cache. In a set-associative cache, the cache is
+split into chunks of $n$ cache lines. Each memory address maps deterministically
+to a given chunk (according to its least significant bits) precisely as a direct
+mapped cache. However, within this chunk the mapping proceeds as with a fully
+associative cache with $n$ choices.
+
+The cache eviction strategies work the same way as for a fully associative
+cache.
+
+\begin{thebibliography}{99}
+
+\bibitem {} D.E. Culler and J.P. Singh, Parallel Computer Architecture,
+{\em Morgan Kaufmann Publishers, Inc.}, 1999.
+
+\bibitem {} C.C. Douglas, G. Haase, J. Hu, M. Kowarschik, U. Rude,
+and C. Weiss, Portable memory hierarchy techniques for PDE solvers: Part I,
+{\em SIAM News}, Vol. 33, No. 5, 2000.
+
+\bibitem  {} B. Lande, Optimalisering av flyttallsintensive programmer,
+Institutt for matematiske fag, NTNU, 2004. (In Norwegian.)

@@ -1,4 +1,6 @@
-section{Supercomputing}
+\chapter{Introduction}
+
+\section{Supercomputing}
 
 What do we mean by supercomputing? In general, we mean using computers to solve
 problems which are very computationally intensive, i.e. problems which require
@@ -135,7 +137,7 @@ However, it is important to realize that progress in computational algorithms
 has been equally impressive. Note that developing a new algorithm which requires
 only half the number of floating point operations is equally important as buying
 a new computer with twice the performance in terms of floating point operations
-per second (FLOPS).
+per second (Flops).
 
 We will discuss a few selected numerical algorithms in this course, e.g.
 numerical solution of partial differential equations (primarily finite
@@ -186,12 +188,11 @@ expressed as
 \end{align}
 where $F$ denotes the fraction of the mantissa in binary representation (i.e.
 the binary digits $b_1b_2\ldots$). Since this representation is always assumed,
-the binary number $1$ in the front is not explicitly represented. Note that, in
-decimal representation,
+the binary number $1$ in the front is not explicitly represented. Note that,
 \begin{align}
   1 \leq M < 2,
 \end{align}
-since the fraction $F$ in decimal representation is always less then one.
+since the fraction $F$ is always less then one.
 
 There are many more details regarding floating point representation. For
 example, the implicitly assumed binary number 1 in the mantissa is only true for
@@ -199,6 +200,7 @@ what is referred to as {\em normalized} numbers.
 
 \begin{table}
   \centering
+  \caption{Number of bits for common floating point standards.}
   \bgroup\def\arraystretch{1.2}
   \begin{tabular}{ccccc} \hline
     Precision & $S$ & $E$ & $F$ & Total \\ \hhline{=====}
@@ -208,9 +210,6 @@ what is referred to as {\em normalized} numbers.
     \\ \hline
   \end{tabular}
   \egroup
-  \caption{
-    Number of bits for common floating point standards.
-  }
 \end{table}
 
 A few words about the exponent $E$. In single precision, $E$ is represented
@@ -218,7 +217,7 @@ using 8 bits, giving 256 possibilities, of which 254 are used to represent
 normalized numbers. The values $E=0$ and $E=255$ are primarily reserved for zero
 and infinities. The actual exponent used to find the corresponding decimal value
 of a normalized number is $E-B$; see equation (1). For single precision,
-$B=127$.
+$B=127$ and for double precision, $B=1023$.
 
 We can now compute the maximum and minimum numbers that we can represent in
 single precision (i.e. using 32 bits):
@@ -240,28 +239,36 @@ fraction} that can be represented is
 This implies that {\em any} floating point number using single precision
 (covering the whole range discussed above) has about 7 digits of accuracy.
 
-\noindent {\bfseries Exercise 1}. Consider the maximum and minimum numbers
-derived in (\ref{maxnumber})-(\ref{minnumber}). How many digits should we
-include in each of these numbers?\\
-\\
-\noindent {\bfseries Exercise 2}. Find the binary floating point representation
-of the decimal number 4.25 in single precision.\\
-\\
-\noindent {\bfseries Exercise 3}. How many digits of accuracy does a floating
-point number in double precision have?
+\begin{ex}
+  Consider the maximum and minimum numbers defived in
+  \eqref{maxnumber}-\eqref{minnumber}. How many digits should we include in each
+  of these numbers when written out?
+\end{ex}
+
+\begin{ex}
+  Find the binary floating point representation of the decimal number $4.25$ in
+  single precision.
+\end{ex}
+
+\begin{ex}
+  How many decimal digits of accuracy does a double precision floating point
+  number have?
+\end{ex}
 
 \section{Integer representation}
 
 An integer is typically represented using 32 bits. One bit is used to represent
 the sign. Hence, the possible integers will be in the range $\pm 2^{31} \approx
-\pm \, 2\cdot 10^9$.
+\pm 2\cdot 10^9$.
 
 If an algorithm includes a loop which needs to be done $n$ times (e.g., a Monte
 Carlo simulation), $n$ needs to be less than approximately $10^9$. This may seem
 sufficient, however, there could be situations when this limitation could become
 an issue.
 
-\noindent {\bfseries Exercise 4}. Propose a way to avoid the above limitation.
+\begin{ex}
+  Propose one or several ways around this limitation.
+\end{ex}
 
 \section{Floating point performance}
 
@@ -269,25 +276,27 @@ The basic operations of adding, multiplying, subtracting and dividing two
 floating point numbers are counted as floating point operations.
 
 Floating point performance is usually measured in number of floating point
-operations per second, commonly abbreviated as FLOPS; for a brief discussion,
-see \texttt{http://en.wikipedia.org/wiki/FLOPS}.
+operations per second, commonly abbreviated as Flops; for a brief discussion
+see \url{http://en.wikipedia.org/wiki/FLOPS}.
 
 Since current computer systems typically perform many of these operations per
-seconds, abbreviations like MFLOPS (megaflops), GFLOPS (gigaflops), TFLOPS
-(teraflops), and PFLOPS (petaflops) are common to use.
+seconds, abbreviations like MFlops (megaflops), GFlops (gigaflops), TFlops
+(teraflops), and PFlops (petaflops) are common to use.
 
 When we speak about the speed of a computer, we will typically mean the floating
 point performance.
 
-\noindent {\bfseries Exercise 5}. Let $c$ be a scalar (a floating point number),
-let $\underline{x}$, $\underline{y}$, and $\underline{z}$ be vectors, each
-comprising $n$ floating point numbers, and let $\underline{A}$ be an $n\times n$
-matrix. How many floating point operations does it take to perform the following
-basic linear algebra operations: $\underline{z} = \underline{x} + c
-\underline{y}$? What about the matrix-vector product $\underline{y} =
-\underline{A}\,\underline{x}$ ?\\
+\begin{ex}
+  Let $c$ be a scalar (a floating point number), let $\bm x$, $\bm y$, and $\bm
+  z$ be vectors, each comprising $n$ floating point numbers, and let $\bm A$ be
+  an $n\times n$ matrix. How many floating point operations does it take to
+  perform the following basic linear algebra operations?
+  \begin{align*}
+  \bm z = \bm x + c \bm y, \qquad \bm y = \bm A \bm x
+  \end{align*}
+\end{ex}
 
-\section{Storage requirement}
+\section{Storage requirements}
 
 It is quite common today to do all the necessary computations using double
 precision. This means that 64 bits are used to represent each floating point
@@ -295,9 +304,9 @@ number, which is equivalent to 8 bytes (8 bits per byte).
 
 Let us now consider how many floating point numbers we can store in the memory
 associated with a typical processor. Assume that we have available 4 Gbytes
-($4\cdot 10^9$ bytes) of main memory (or RAM: Random Access Memory); this is a
-quite typical size nowadays. This amount of memory is sufficient to represent a
-total of 512 millon floating point numbers in double precision.
+($4\cdot 10^9$ bytes) of main memory (or RAM: \emph{Random Access Memory}); this
+is a quite typical size nowadays. This amount of memory is sufficient to
+represent a total of 512 millon floating point numbers in double precision.
 
 In practice, we could never use the entire memory for such a purpose. We also
 need space for our simulation program (instructions etc.). However, it gives an
@@ -305,132 +314,140 @@ indication of the order of magnitude that we can handle.
 
 If we are solving differential equations or some other problem, we also need to
 use memory to store matrices, temporary variables, etc. The available memory to
-store the actual solution depends on the numerical algorithm, however, even a
+store the actual solution depends on the numerical algorithm, however even a
 fairly scalable algorithm would typically only be able to handle a few million
 unknowns. Many algorithms would allow far fewer unknowns.
 
 Problems in science and engineering can easily require many million unknowns,
 perhaps even billions of unknowns. In order to solve such problems, we obviously
 need both more memory and increased computing power. This is achieved using
-parallel processing where multiple processors (and memory modules), are
-connected into a single computational platform.
+parallel processing where multiple processors and memory modules are connected
+into a single computational platform.
 
-\noindent {\bfseries Exercise 6}. Let $\underline{A}$ be an $n\times n$ matrix,
-and $\underline{x}$ and $\underline{b}$ be two vectors of length $n$. Assume
-that we want to solve the linear system of equations
-\begin{align}
-  \underline{A}\,\underline{x} = \underline{b}
-\end{align}
-using Gaussian elimination. Assume further that the matrix $\underline{A}$ is
-dense, meaning that we need to store all the $n^2$ entries in the matrix.
+\begin{ex}
+  Let $\bm A$ be an $n\times n$ matrix, and $\bm x$ and $\bm b$ be two vectors
+  of length $n$. Assume that we want to solve the linear system of equations
+  \begin{align*}
+    \bm A \bm x = \bm b
+  \end{align*}
+  using Gaussian elimination. Assume further that the matrix $\bm A$ is dense,
+  meaning that we need to store all the $n^2$ entries in the matrix.
 
-What is (approximately) the largest equation system we can solve (i.e., the
-largest number of $n$ we can use) and still be able to fit the whole problem in
-the main memory, which we assume is 1 Gbyte?
+  What is (approximately) the largest equation system we can solve (i.e., the
+  largest number of $n$ we can use) and still be able to fit the whole problem
+  in the main memory, which we assume is 1 Gbyte?
+\end{ex}
 
 \section{Past, current and future supercomputers}
 
-Figure \ref{fig:perform_dev} and Figure \ref{fig:proj_perform_dev} depict the
-past and future performance development of the 500 fastest supercomputers in the
-world. More information about the top 500 systems can be found on
-\url{http://top500.org}.
+\autoref{fig:perform-dev} depicts the past and future performance development
+of the 500 fastest supercomputers in the world. More information about the top
+500 systems can be found on \url{http://top500.org}.
 
-\vspace{2cm}
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=14cm]{Performance_Development}
-  \caption{
-    The figure shows the performance development since 1993 for the top 500
-    supercomputers in the world. In particular, the figure indicates the
-    performance development for the fastest system (number 1), the slowest
-    system (number 500), and the sum of all the 500 fastest systems.
-  }
-  \label{fig:perform_dev}
-\end{figure}
-\vspace{1cm}
+In 1986 a supercomputing center was established at NTH.
+\autoref{tab:history-ntnu} gives a summary of the supercomputers at NTH/NTNU
+since then.
 
-\begin{figure}[!ht]
+\begin{figure}
   \centering
-  \includegraphics[width=14cm]{Projected_Performance_Development}
+  \begin{tikzpicture}
+    \begin{axis}[
+      date coordinates in=x,
+      ymode=log,
+      xticklabel=\year,
+      xmin=1993-05-01,
+      xmax=2015-10-01,
+      width=\textwidth,
+      height=0.4\textheight,
+      ytick={1, 1000, 1000000, 1000000000},
+      yticklabels={1 GFlops, 1 TFlops, 1 PFlops, 1 EFlops},
+      grid=major,
+      legend style={at={(1,0)}, anchor=south east},
+      legend cell align=left,
+      ]
+      \addplot[mark=o, mark size=1.3, draw=darkgreen, thick]
+      table[x=date, y=sum, col sep=comma]
+      {data/performance-development.csv};
+      \addplot[mark=o, mark size=1.3, draw=red, thick]
+      table[x=date, y=high, col sep=comma]
+      {data/performance-development.csv};
+      \addplot[mark=o, mark size=1.3, draw=magenta, thick]
+      table[x=date, y=low, col sep=comma]
+      {data/performance-development.csv};
+      \legend{Sum, Highest, Lowest};
+    \end{axis}
+  \end{tikzpicture}
   \caption{
-    The figure shows the projected performance development assuming that the
-    past trends continues.
+    The performance development since 1993 for the top 500 supercomputers in the
+    world. In particular, the figure indicates the performance development for
+    the fastest system (number 1), the slowest system (number 500), and the sum
+    of all the 500 fastest systems.
   }
-  \label{fig:proj_perform_dev}
+  \label{fig:perform-dev}
 \end{figure}
 
 \begin{table}
-  \caption{Supercomputers at NTH/NTNUÊ}
+  \caption{
+    Supercomputers at NTH/NTNU. Note that some of this information is guesswork
+    as not all machines were not available at when revising this document.
+  }
   \centering
-  \begin{tabular}{|l|l|l|l|l|l|}
+  \bgroup\def\arraystretch{1.2}
+  \begin{tabular}{llrlr}
     \hline
-    Year & System & \#proc & type & GF\footnote{maximal theoretical performance in GFLOPS} \\
-    \hline
-    1986-1992 & Cray X-MP & 2 & vector & 0.5 \\
-    1992-1996 & Cray Y-MP & 4 & vector & 1.3\\
-    1995-2003 & Cray J90     & 8 & vector & 1.6 \\
-    1992-1999 & Intel Paragon & 56 & MPP & 5.0\\
-    1996-2003 & Cray T3E & 96 & MPP & 58\\
-    2000-2001 & SGI O2 & 160 & CCNUMA & 100\\
-    2001-2008 & SGI O3 & 898 & CCNUMA & 1000\\
-    2006-2011 & IBM P5+ & 2976 & distributed SMP & 23500\\
-    2012-     & SGI Altix ICE X & 23040 & distributed SMP & 497230 \\
+    Year & System & Processors & Type & GF\footnote{maximal theoretical performance in GFLOPS} \\
+    \hhline{=====}
+    1986--1992 & Cray X-MP & 2 & Vector & 0.5 \\
+    1992--1996 & Cray Y-MP & 4 & Vector & 1.3\\
+    1995--2003 & Cray J90     & 8 & Vector & 1.6 \\
+    1992--1999 & Intel Paragon & 56 & MPP & 5.0\\
+    1996--2003 & Cray T3E & 96 & MPP & 58\\
+    2000--2001 & SGI O2 & 160 & ccNUMA & 100\\
+    2001--2008 & SGI O3 & 898 & ccNUMA & 1000\\
+    2006--2011 & IBM P5+ & 2976 & Distributed SMP & 23500\\
+    2012--     & SGI Altix ICE X & 23040 & Distributed SMP & 497230 \\
     \hline
   \end{tabular}
-  \label{tab:history_ntnu}
+  \egroup
+  \label{tab:history-ntnu}
 \end{table}
 
-In 1986 a supercomputing center was established at NTH. Table
-\ref{tab:history_ntnu} gives a summary of the supercomputers at NTH/NTNU since
-then.
-
-\emph{NOTE}: Some of this information is guesswork as the machine was not available at
-when revising this document.
-
 The current supercomputer at NTNU is an SGI Altix system with 20736 (physical)
-processors. For an example of what such a system looks like, see Figure
-\ref{fig:njord-2} and \ref{fig:njord-1}. Some of the exercises in this course
-will be done using this system. Some of the key characteristics of this system
-are:
+processors. For an example of what such a system looks like, see
+\autoref{fig:njord}. Some of the exercises in this course will be done using
+this system. Some of the key characteristics of this system are:
 \begin{itemize}
 \item Full name: \texttt{vilje.hpc.ntnu.no}
 \item System: SGI Altix ICE
-\item Type: distributed SMP
+\item Type: Distributed SMP
 \item Number of nodes: 1440
-\item A single node: \\
-  a shared memory system; 2 octa-core chips; 32 GB memory
+\item Nodes: Shared memory system; 2 octa-core chips; 32 GB memory
 \item Number of cores (processors): 23040
 \item CPU type: Intel Sandy Bridge
-\item Theoretical total peak: 479.23 Tflops
-\item Weight: This machine is shy and refuse to tell me.
+\item Theoretical peak performance: 479.23 TFlops
+\item Weight: This machine is shy and refuses to tell me
 \end{itemize}
 
-\begin{figure}[!ht]
+\begin{figure}
   \centering
-  \includegraphics[width=8cm]{njord_2}
+  \includegraphics[width=0.6\textwidth]{njord_2}
+  \includegraphics[width=0.6\textwidth]{njord_1}
   \caption{
-    A photo of \emph{Njord}, the previous IBM supercomputer system at NTNU.
+    Photos of \emph{Njord}, the previous IBM supercomputer system at NTNU.
     Courtesy of Arve Dispen.
   }
-  \label{fig:njord-2}
-\end{figure}
-
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=8cm]{njord_1}
-  \caption{
-    A photo of \emph{Njord}, the previous IBM supercomputer system at NTNU.
-    Courtesy of Arve Dispen.
-  }
-  \label{fig:njord-1}
+  \label{fig:njord}
 \end{figure}
 
 \section{Applications}
 
+Some sample applications for supercomputing are given in \Autoref{fig:met,
+fig:climate}.
+
 \vspace{2cm}
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=12cm]{met}
+  \includegraphics[height=0.6\textheight]{met}
   \caption{
     Example of use of supercomputing: weather forecasting. The Meteorological
     Institute in Norway uses the supercomputer \emph{Njord} every day. Source:
@@ -441,7 +458,7 @@ are:
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=8cm]{climate_model}
+  \includegraphics[height=0.6\textheight]{climate_model}
   \caption{
     Example of use of supercomputing: climate modelling. For more information,
     see \protect\url{http://bjerknes.uib.no} (Bjerknes Centre for Climate Research).

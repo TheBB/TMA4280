@@ -1,9 +1,38 @@
 \documentclass[onecolumn, twoside, a4paper, 11pt]{memoir}
 
-% Palatino font for rm family
-\usepackage{newpxtext,newpxmath}
+\usepackage[utf8]{inputenc}
 
+% Fonts
+\usepackage{newpxtext,newpxmath}
 \renewcommand*\sfdefault{cmss}
+
+% References
+\usepackage{hyperref}
+
+% Fancy command for auto-refing multiple references
+\makeatletter
+\newcommand\Autoref[1]{\@first@ref#1,@}
+\def\@throw@dot#1.#2@{#1}% discard everything after the dot
+\def\@set@refname#1{%    % set \@refname to autoefname+s using \getrefbykeydefault
+    \edef\@tmp{\getrefbykeydefault{#1}{anchor}{}}%
+    \def\@refname{\@nameuse{\expandafter\@throw@dot\@tmp.@autorefname}s}%
+}
+\def\@first@ref#1,#2{%
+  \ifx#2@\autoref{#1}\let\@nextref\@gobble% only one ref, revert to normal \autoref
+  \else%
+    \@set@refname{#1}%  set \@refname to autoref name
+    \@refname~\ref{#1}% add autoefname and first reference
+    \let\@nextref\@next@ref% push processing to \@next@ref
+  \fi%
+  \@nextref#2%
+}
+\def\@next@ref#1,#2{%
+   \ifx#2@ and~\ref{#1}\let\@nextref\@gobble% at end: print and+\ref and stop
+   \else, \ref{#1}% print  ,+\ref and continue
+   \fi%
+   \@nextref#2%
+}
+\makeatother
 
 % URL styles
 \usepackage{url}
@@ -12,6 +41,9 @@
 % Math
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{bm}
+
+\newtheorem{ex}{Exercise}[chapter]
 
 % Graphics
 \usepackage{graphicx}
@@ -19,13 +51,40 @@
 
 % Tikz
 \usepackage{tikz}
+\usetikzlibrary{positioning,shapes,arrows,calc,intersections}
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{compat=1.8}
 
 % Colors
 \definecolor{darkblue}{HTML}{00688B}
+\definecolor{darkgreen}{HTML}{6E8B3D}
 \definecolor{cadet}{HTML}{DAE1FF}
+\definecolor{salmon}{HTML}{FFB08A}
+
+% Listings
+\usepackage{listings}
+\lstset{
+  keywordstyle=\bfseries\color{orange},
+  basicstyle=\ttfamily,
+}
+\lstdefinestyle{fortran}{
+  language=Fortran,
+  morekeywords={for},
+}
 
 % Double hlines
 \usepackage{hhline}
+
+% Make footnotes work inside tables
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+\makesavenoteenv{table}
+
+% Numbering
+\makeatletter
+\let\c@table\c@figure
+\makeatother
 
 \begin{document}
 
@@ -40,7 +99,7 @@
   Eivind Fonn
 \end{titlingpage}
 
-\chapter{Introduction}
 \input{01-introduction}
+\input{02-single}
 
 \end{document}
