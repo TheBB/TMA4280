@@ -164,13 +164,13 @@ there were conflicts you will have something that looks like the following:
 \end{lstlisting}
 
 The first line is a starting marker. This is followed by lines that are in
-conflict, these are from the local repository. After the equal signs follow the
-lines in conflict from the remote repository. Finally an ending marker and the
+conflict, these are from the remote repository. After the equal signs follow the
+lines in conflict from the local repository. Finally an ending marker and the
 commit hash from the remote. Change it into what you want it to be and save the
 file. Remember that there may be multiple blocks in conflict in each file!
 
-Stage the resolved files through \texttt{git add} and continue the rebase by
-doing
+Stage the resolved files and continue the rebase by doing
 \begin{lstlisting}
+  git add <file>
   git rebase --continue
 \end{lstlisting}
