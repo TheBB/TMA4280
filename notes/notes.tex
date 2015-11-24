@@ -76,6 +76,11 @@
 \lstdefinestyle{fortran}{
   language=Fortran,
   morekeywords={for},
+  deletekeywords={status},
+}
+\lstdefinestyle{c}{
+  language=C,
+  morekeywords={include},
 }
 \lstdefinestyle{shell}{
   language=bash,
@@ -91,7 +96,10 @@
 
 % Numbering
 \makeatletter
-\let\c@table\c@figure
+\AtBeginDocument{%
+  \let\c@lstlisting\c@figure
+  \let\c@table\c@figure
+}
 \makeatother
 
 \begin{document}
@@ -110,6 +118,7 @@
 \input{01-introduction}
 \input{02-single}
 \input{03-git}
+\input{04-multi}
 
 % \begin{thebibliography}{99}
 
