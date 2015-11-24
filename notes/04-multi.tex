@@ -48,8 +48,8 @@ We add some additional remarks regarding scalability. Let $T_P$ be the time to
 solve a given problem on $P$ processors, where time refers to wall clock time.
 We define the speedup, $S_P$, as
 \begin{align}
-S_P = \frac{T_1}{T_P},
-\label{multi:speedup}
+  S_P = \frac{T_1}{T_P},
+  \label{multi:speedup}
 \end{align}
 i.e. as the ratio between the solution time on a single processor divided by the
 solution time on $P$ processors. Ideally, we would like $S_P$ to be equal to
@@ -70,9 +70,24 @@ because of the computational cost, or both. From this view point, the definition
 of speedup in \eqref{multi:speedup} must be used with some care.
 
 \begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.6]{scalability}
-  \end{center}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      xmin=0,
+      xmax=1.3,
+      ymin=0,
+      ymax=1.3,
+      axis lines=middle,
+      ticks=none,
+      xlabel={$P$},
+      ylabel={$S_P$},
+      ]
+      \addplot[dashed, thick, domain=0:1.1, samples=100]{x};
+      \addplot[blue, thick, domain=0:1.3, samples=100]{x/(1+x^5)};
+      \node at (axis cs:1.0,1.1) [anchor=east] {Ideally};
+      \node at (axis cs:1.13,0.3) [anchor=east] {Realistically};
+    \end{axis}
+  \end{tikzpicture}
   \caption{Ideal speedup ($S_P = P$) and realistic speedup.}
   \label{fig:scalability}
 \end{figure}
@@ -108,17 +123,43 @@ organization has its strengths and weaknesses. We will return to some of these
 issues later.
 
 \begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.7]{multiprocess1}
-  \end{center}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {0,4,8}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i,10) rectangle (\i+2,7);
+      \draw[darkblue, very thin, dashed] (\i,8.5) -- (\i+2,8.5);
+      \draw[darkblue, fill=cadet, thick] (\i,3) rectangle (\i+2,1.5);
+      \draw[darkblue, thick] (\i+1,7) -- (\i+1,6);
+      \draw[darkblue, thick] (\i+1,3) -- (\i+1,4);
+      \node at (\i+1,9.25) {P};
+      \node at (\i+1,7.75) {\$};
+      \node at (\i+1,2.25) {M};
+    }
+    \draw[darkblue, thick] (0,6) rectangle (10,4);
+    \node at (5,5) {Interconnect};
+  \end{tikzpicture}
   \caption{A parallel computer with global memory access.}
   \label{fig:multiprocess1}
 \end{figure}
 
 \begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.7]{multiprocess2}
-  \end{center}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {0,4,8}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i,10) rectangle (\i+2,7);
+      \draw[darkblue, very thin, dashed] (\i,8.5) -- (\i+2,8.5);
+      \draw[darkblue, fill=cadet, thick] (\i,6) rectangle (\i+2,4.5);
+      \draw[darkblue, thick] (\i+1,7) -- (\i+1,6);
+      \draw[darkblue, thick] (\i+1,3.5) -- (\i+1,4.5);
+      \node at (\i+1,9.25) {P};
+      \node at (\i+1,7.75) {\$};
+      \node at (\i+1,5.25) {M};
+    }
+    \draw[darkblue, thick] (0,1.5) rectangle (10,3.5);
+    \node at (5,2.5) {Interconnect};
+  \end{tikzpicture}
   \caption{A parallel computer with distributed memory access.}
   \label{fig:multiprocess2}
 \end{figure}
@@ -139,9 +180,30 @@ potentially alleviate some of this problem, but then the question of how to
 achieve cache coherency (or consistency) arises.
 
 \begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.7]{bus_organization}
-  \end{center}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {-1,3}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i,4) rectangle (\i+2,1);
+      \draw[darkblue, very thin, dashed] (\i,2.5) -- (\i+2,2.5);
+      \draw[darkblue, thick] (\i+1,1) -- (\i+1,0);
+      \node at (\i+1,3.25) {P};
+      \node at (\i+1,1.75) {\$};
+    }
+    \foreach \i in {7,11}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i,2.5) rectangle (\i+2,1);
+      \draw[darkblue, thick] (\i+1,1) -- (\i+1,0);
+      \node at (\i+1,1.75) {I/O};
+    }
+    \foreach \i in {1,5,9}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i,-2.5) rectangle (\i+2,-1);
+      \draw[darkblue, thick] (\i+1,-1) -- (\i+1,0);
+      \node at (\i+1,-1.75) {M};
+    }
+    \draw[red, very thick, <->] (-3,0) -- (15,0);
+  \end{tikzpicture}
   \caption{
     A bus-based organization. The global memory is accessible to each processor.
   }
@@ -155,9 +217,31 @@ bandwidth is increased, but adding a processor becomes more and more expensive
 as the system size grows (because the number of parts increases).
 
 \begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.6]{crossbar}
-  \end{center}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {0,3,6,9}
+    {
+      \draw[red, very thick] (0,\i) -- (11,\i);
+      \draw[red, very thick] (\i,0) -- (\i,11);
+
+      \draw[darkblue, fill=cadet, thick] (11,\i+.75) rectangle (13,\i-.75);
+      \node at (12,\i) {M};
+    }
+
+    \foreach \i in {0,3}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i-1,14) rectangle (\i+1,11);
+      \draw[darkblue, very thin, dashed] (\i-1,12.5) -- (\i+1,12.5);
+      \node at (\i,13.25) {P};
+      \node at (\i,11.75) {\$};
+    }
+
+    \foreach \i in {6,9}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i-1,12.5) rectangle (\i+1,11);
+      \node at (\i,11.75) {I/O};
+    }
+  \end{tikzpicture}
   \caption{
     A crossbar interconnect. The global memory is accessible to each processor.
   }
@@ -172,9 +256,44 @@ issues is the multistage interconnect; see
 \autoref{fig:multistage_interconnect}.
 
 \begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.6]{multistage_interconnect}
-  \end{center}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {0,4,8,12}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i-1,0) rectangle (\i+1,1.5);
+      \draw[darkblue, thick] (\i,1.5) -- (\i,2.5);
+      \draw[darkblue, thick] (\i,8.5) -- (\i,9.5);
+      \node at (\i,0.75) {M};
+    }
+
+    \foreach \i in {0,4}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i-1,12.5) rectangle (\i+1,9.5);
+      \draw[darkblue, very thin, dashed] (\i-1,11) -- (\i+1,11);
+      \node at (\i,11.75) {P};
+      \node at (\i,10.25) {\$};
+    }
+
+    \foreach \i in {8, 12}
+    {
+      \draw[darkblue, fill=cadet, thick] (\i-1,9.5) rectangle (\i+1,11);
+      \node at (\i,10.25) {I/O};
+    }
+
+    \foreach \i in {2, 10}
+    {
+      \foreach \j in {3.5, 7.5}
+      {
+        \draw[darkblue, thick] (\i-3,\j-1) rectangle (\i+3,\j+1);
+        \node at (\i,\j) {Interconnect};
+      }
+    }
+
+    \draw[darkblue, thick] (0,4.5) -- (0,6.5);
+    \draw[darkblue, thick] (12,4.5) -- (12,6.5);
+    \draw[darkblue, thick] (4,4.5) -- (8,6.5);
+    \draw[darkblue, thick] (8,4.5) -- (4,6.5);
+  \end{tikzpicture}
   \caption{
     A multi-stage interconnect. The global memory is accessible to each processor.
   }
