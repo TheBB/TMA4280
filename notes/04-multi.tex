@@ -532,7 +532,8 @@ done in both C and FORTRAN.
     if (rank == 0) {
       strcpy(message, "Hello, world");
       for (i = 1; i < size; i++) {
-        MPI_Send(message, 13, MPI_CHAR, i, tag, MPI_COMM_WORLD);
+        MPI_Send(message, 13, MPI_CHAR, i,
+                 tag, MPI_COMM_WORLD);
       }
     }
     else {
@@ -704,9 +705,10 @@ execution will move on to the MPI statement \texttt{MPI\_Recv}. This means that
 all of the other processes will be waiting for the root process to send them
 data. The root process sends data to the other processes in the loop
 \begin{lstlisting}[style=c]
-    for (i=1; i < size; i++) {
-      MPI_Send (message, 13, MPI_CHAR, i, tag, MPI_COMM_WORLD);
-    }
+  for (i=1; i < size; i++) {
+    MPI_Send(message, 13, MPI_CHAR, i,
+             tag, MPI_COMM_WORLD);
+  }
 \end{lstlisting}
 Several comments are in order here. First, note that the root process sends out
 the same message (string) to all the other processes. This is done in a loop.
