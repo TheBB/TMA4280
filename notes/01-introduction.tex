@@ -303,10 +303,11 @@ precision. This means that 64 bits are used to represent each floating point
 number, which is equivalent to 8 bytes (8 bits per byte).
 
 Let us now consider how many floating point numbers we can store in the memory
-associated with a typical processor. Assume that we have available 4 Gbytes
-($4\cdot 10^9$ bytes) of main memory (or RAM: \emph{Random Access Memory}); this
-is a quite typical size nowadays. This amount of memory is sufficient to
-represent a total of 512 millon floating point numbers in double precision.
+associated with a typical processor. Assume that we have available
+$\SI{4}{\giga\byte}$ ($4\cdot 10^9$ bytes) of main memory (or RAM: \emph{Random
+Access Memory}); this is a quite typical size nowadays. This amount of memory is
+sufficient to represent a total of 512 millon floating point numbers in double
+precision.
 
 In practice, we could never use the entire memory for such a purpose. We also
 need space for our simulation program (instructions etc.). However, it gives an
@@ -335,7 +336,7 @@ into a single computational platform.
 
   What is (approximately) the largest equation system we can solve (i.e., the
   largest number of $n$ we can use) and still be able to fit the whole problem
-  in the main memory, which we assume is 1 Gbyte?
+  in the main memory, which we assume is $\SI{1}{\giga\byte}$?
 \end{ex}
 
 \section{Past, current and future supercomputers}
@@ -360,7 +361,7 @@ since then.
       width=\textwidth,
       height=0.4\textheight,
       ytick={1, 1000, 1000000, 1000000000},
-      yticklabels={1 GFlops, 1 TFlops, 1 PFlops, 1 EFlops},
+      yticklabels={$\SI{1}{\giga\flop}$, $\SI{1}{\tera\flop}$, $\SI{1}{\peta\flop}$, $\SI{1}{\exa\flop}$},
       grid=major,
       legend style={at={(1,0)}, anchor=south east},
       legend cell align=left,
@@ -395,7 +396,7 @@ since then.
   \bgroup\def\arraystretch{1.2}
   \begin{tabular}{llrlr}
     \hline
-    Year & System & Processors & Type & GF\footnote{maximal theoretical performance in GFLOPS} \\
+    Year & System & Processors & Type & GF\footnote{maximal theoretical performance in $\SI{}{\giga\flop}$} \\
     \hhline{=====}
     1986--1992 & Cray X-MP & 2 & Vector & 0.5 \\
     1992--1996 & Cray Y-MP & 4 & Vector & 1.3\\

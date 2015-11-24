@@ -45,7 +45,17 @@ multiprocessor system concern:
 \end{enumerate}
 
 We add some additional remarks regarding scalability. Let $T_P$ be the time to
-solve  $P$ is small), we
+solve a given problem on $P$ processors, where time refers to wall clock time.
+We define the speedup, $S_P$, as
+\begin{align}
+S_P = \frac{T_1}{T_P},
+\label{multi:speedup}
+\end{align}
+i.e. as the ratio between the solution time on a single processor divided by the
+solution time on $P$ processors. Ideally, we would like $S_P$ to be equal to
+$P$, implying the $P$ processors should be able to solve the problem $P$ times
+as fast as a single processor. A more realistic situation is depicted in
+\autoref{fig:scalability}: for small systems (i.e. when $P$ is small), we
 typically get good speedup for a fixed problem. As more processors are added,
 the computational task per processor is reduced, while the communication
 overhead between the processors typically increases. Hence, after a certain
@@ -577,7 +587,7 @@ is shown in Listings \ref{lst:mpi-hello-4} and \ref{lst:mpi-hello-8}.
   node 2: Hello, world
 \end{lstlisting}
 
-\begin{lstlisting}[float, caption={Hello world MPI in C: $8$ processors.}, label=lst:mpi-hello-4]
+\begin{lstlisting}[float, caption={Hello world MPI in C: $8$ processors.}, label=lst:mpi-hello-8]
   node 5: Hello, world
   node 1: Hello, world
   node 7: Hello, world
