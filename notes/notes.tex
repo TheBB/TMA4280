@@ -1,6 +1,7 @@
 \documentclass[onecolumn, twoside, a4paper, 11pt]{memoir}
 
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 
 % Fonts
 \usepackage{newpxtext,newpxmath}
@@ -63,14 +64,21 @@
 \definecolor{salmon}{HTML}{FFB08A}
 
 % Listings
+\usepackage{textcomp}
 \usepackage{listings}
 \lstset{
   keywordstyle=\bfseries\color{orange},
+  stringstyle=\color{darkblue!80},
+  showstringspaces=false,
   basicstyle=\ttfamily,
+  upquote=true,
 }
 \lstdefinestyle{fortran}{
   language=Fortran,
   morekeywords={for},
+}
+\lstdefinestyle{shell}{
+  language=bash,
 }
 
 % Double hlines
@@ -101,5 +109,18 @@
 
 \input{01-introduction}
 \input{02-single}
+\input{03-git}
+
+% \begin{thebibliography}{99}
+
+% \bibitem {} D.E. Culler and J.P. Singh, Parallel Computer Architecture,
+% {\em Morgan Kaufmann Publishers, Inc.}, 1999.
+
+% \bibitem {} C.C. Douglas, G. Haase, J. Hu, M. Kowarschik, U. Rude,
+% and C. Weiss, Portable memory hierarchy techniques for PDE solvers: Part I,
+% {\em SIAM News}, Vol. 33, No. 5, 2000.
+
+% \bibitem {} B. Lande, Optimalisering av flyttallsintensive programmer,
+% Institutt for matematiske fag, NTNU, 2004. (In Norwegian.)
 
 \end{document}
