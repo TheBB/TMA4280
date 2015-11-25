@@ -399,7 +399,7 @@ multiprocessor.
 Alternative architectures are SISD - \emph{Single Instruction Single Data} (a
 classical workstation), and SIMD - \emph{Single Instruction Multiple Data}
 (sometimes called an array processor or a vector processor). An example of a
-SIMD interface is HPF: High Performance FORTRAN.
+SIMD interface is HPF: High Performance Fortran.
 
 There are different types of MIMD computers:
 \begin{enumerate}
@@ -630,7 +630,7 @@ message and all processors print out the message together with the their own
 process number.
 
 Listings \ref{lst:mpi-hello-c} and \ref{lst:mpi-hello-fortran} show how this is
-done in both C and FORTRAN.
+done in both C and Fortran.
 
 \begin{lstlisting}[style=c, float, caption={Hello world MPI in C.}, label=lst:mpi-hello-c]
   #include <stdio.h>
@@ -668,7 +668,7 @@ done in both C and FORTRAN.
   }
 \end{lstlisting}
 
-\begin{lstlisting}[style=fortran, float, caption={Hello world MPI in FORTRAN.}, label=lst:mpi-hello-fortran]
+\begin{lstlisting}[style=fortran, float, caption={Hello world MPI in Fortran.}, label=lst:mpi-hello-fortran]
   program hello
   include 'mpif.h'
 
@@ -729,7 +729,7 @@ statement
 \begin{lstlisting}[style=c]
   #include "mpi.h"
 \end{lstlisting}
-The equivalent statement in FORTRAN is
+The equivalent statement in Fortran is
 \begin{lstlisting}[style=fortran]
   include 'mpi.f'
 \end{lstlisting}
@@ -747,11 +747,11 @@ This statement does not have to be the very last statement in your program, but
 it needs to be the last MPI statement. It statement ensures a clean exit.
 
 Note that the command line arguments are passed to the C version of
-\texttt{MPI\_Init}. The corresponding FORTRAN version reads:
+\texttt{MPI\_Init}. The corresponding Fortran version reads:
 \begin{lstlisting}[style=fortran]
   call MPI_INIT(ierror);
 \end{lstlisting}
-Similar to a standard subroutine call in FORTRAN, a call to an MPI operation
+Similar to a standard subroutine call in Fortran, a call to an MPI operation
 also starts with \texttt{call}. The parameter \texttt{ierror} is an integer and
 will return an error code in case something goes wrong. The C version also
 returns an error code. Instead of the statement used in the program listed
@@ -775,7 +775,7 @@ always starts with a capital letter and the remaining letters are lower-case.
 The number and type of parameters vary from operation to operation. For example,
 \texttt{MPI\_Finalize} does not have any parameters at all.
 
-In FORTRAN, any MPI statement has the format.
+In Fortran, any MPI statement has the format.
 \begin{lstlisting}[style=c]
   call MPI_XXXXX(parameters..., ierror)
 \end{lstlisting}
@@ -891,14 +891,14 @@ until the expected message has been received in the receive buffer.
 
 Let us now comment on the parameter \emph{count} used in the send and receive
 statements. In the C version, the count parameter is set equal to 13, while it
-is 12 in the FORTRAN version. The reason for this is that the \texttt{strcpy}
+is 12 in the Fortran version. The reason for this is that the \texttt{strcpy}
 function in C will append \texttt{\textbackslash 0} (the null character) at the
 end of the message. This is a symbol which indicates the end of the string. Even
 though ``Hello, world'' comprises 12 letters (one byte per letter), the message
 buffer in C requires 13 bytes of memory.
 
 The parameter ``datatype'' in the send and receive operations has to be the same.
-In this case, the type is \texttt{MPI\_CHAR} (in FORTRAN the corresponding data
+In this case, the type is \texttt{MPI\_CHAR} (in Fortran the corresponding data
 type is called \texttt{MPI\_CHARACTER}). This is one of several predefined data
 types. Other important ones include \texttt{MPI\_DOUBLE} and \texttt{MPI\_INT}.
 
