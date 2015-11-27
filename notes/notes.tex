@@ -131,13 +131,12 @@
 \input{07-poisson}
 \input{08-finite-differences}
 \input{09-diagonalization}
+\input{10-io}
 
 % \nocite{openmp}
 % \nocite{openmptut}
 % \bibliographystyle{plain}
 % \bibliography{referanser}
-
-% \appendix
 
 % \section{\texttt{OpenMP} implementation of a program calculating $\pi$ using an integral.}
 % \label{app:openmp-integrate}
@@ -154,5 +153,27 @@
 
 % \bibitem {} B. Lande, Optimalisering av flyttallsintensive programmer,
 % Institutt for matematiske fag, NTNU, 2004. (In Norwegian.)
+
+% \nocite{towards}
+% \nocite{mpi-io}
+% \nocite{mpi-io2}
+
+% \bibliography{referanser}
+% \bibliographystyle{plain}
+% \newpage
+
+\appendix
+
+\chapter{MPI-IO code}
+
+\section{Storage of a cyclic-partitioned vector using \texttt{MPI-IO}.}
+\label{app:cyclicvector}
+\lstinputlisting[style=c]{fileview.c}
+
+\newpage
+
+\section{Storage of a block/strip partitioned array using \texttt{MPI-IO}.}
+\label{app:darray}
+\lstinputlisting[style=c]{combined.c}
 
 \end{document}
