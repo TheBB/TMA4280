@@ -6,3 +6,5 @@
 */auto/*.el
 *.gz
 *.out
+*.bbl
+*.blg

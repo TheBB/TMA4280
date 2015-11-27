@@ -133,46 +133,37 @@
 \input{09-diagonalization}
 \input{10-io}
 
-% \nocite{openmp}
-% \nocite{openmptut}
-% \bibliographystyle{plain}
-% \bibliography{referanser}
+\nocite{openmp}
+\nocite{openmptut}
+\nocite{towards}
+\nocite{mpi-io}
+\nocite{mpi-io2}
+\nocite{culler1999parallel}
+\nocite{douglas2000portable}
+\nocite{lande2004}
 
-% \section{\texttt{OpenMP} implementation of a program calculating $\pi$ using an integral.}
-% \label{app:openmp-integrate}
-% \lstinputlisting[language=C,basicstyle=\small]{serial.c}
-
-% \begin{thebibliography}{99}
-
-% \bibitem {} D.E. Culler and J.P. Singh, Parallel Computer Architecture,
-% {\em Morgan Kaufmann Publishers, Inc.}, 1999.
-
-% \bibitem {} C.C. Douglas, G. Haase, J. Hu, M. Kowarschik, U. Rude,
-% and C. Weiss, Portable memory hierarchy techniques for PDE solvers: Part I,
-% {\em SIAM News}, Vol. 33, No. 5, 2000.
-
-% \bibitem {} B. Lande, Optimalisering av flyttallsintensive programmer,
-% Institutt for matematiske fag, NTNU, 2004. (In Norwegian.)
-
-% \nocite{towards}
-% \nocite{mpi-io}
-% \nocite{mpi-io2}
-
-% \bibliography{referanser}
-% \bibliographystyle{plain}
-% \newpage
+\bibliographystyle{plain}
+\bibliography{references}
 
 \appendix
 
-\chapter{MPI-IO code}
+\chapter{OpenMP code}
+\lstset{inputpath=code/openmp/}
 
-\section{Storage of a cyclic-partitioned vector using \texttt{MPI-IO}.}
+\section{Calculating $\pi$ with an integral in OpenMP}
+\label{app:openmp-integrate}
+\lstinputlisting[style=c]{serial.c}
+
+\chapter{MPI-IO code}
+\lstset{inputpath=code/mpiio/}
+
+\section{Storage of a cyclic-partitioned vector using MPI-IO}
 \label{app:cyclicvector}
 \lstinputlisting[style=c]{fileview.c}
 
 \newpage
 
-\section{Storage of a block/strip partitioned array using \texttt{MPI-IO}.}
+\section{Storage of a block/strip partitioned array using MPI-IO}
 \label{app:darray}
 \lstinputlisting[style=c]{combined.c}
 
