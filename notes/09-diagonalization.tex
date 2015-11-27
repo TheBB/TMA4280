@@ -772,100 +772,66 @@ In summary, for $k=1,\ldots,n-1$,
 By computing the discrete Fourier coefficients $\hat{w}_k$, we can find the
 discrete sine coefficients $\widetilde{v}_k$, $k=1,\ldots,n-1,$ where
 \begin{equation*}
-  \bm \widetilde{v} = \bm S \bm v = \sqrt{\frac{2}{n}} \bm Q \bm v.
+  \tilde{\bm v} = \bm S \bm v = \sqrt{\frac{2}{n}} \bm Q \bm v.
 \end{equation*}
 
 The operator $(\bm F^{(2n)} \bm w)$ can be computed efficiently by a FFT in
 $\mathcal{O}(2n \log 2n) \sim \mathcal{O} (n \log n)$ operations.
 
 This leads to the \emph{modified algorithm} for Poisson:
-\renewcommand{\theenumi}{\arabic{enumi}}
-\renewcommand{\labelenumi}{\textbf{\theenumi)}}
 \begin{enumerate}
-  \item
-    \begin{align*}
-      \underline{\widetilde{\mathbf{G}}} &= \underline{\mathbf{Q}}^T \underline{\mathbf{G}} \underline{\mathbf{Q}} \\
-      \Rightarrow \quad \underline{\widetilde{\mathbf{G}}}^T &= \underline{\mathbf{Q}}^T \underline{\mathbf{G}}^T \underline{\mathbf{Q}} \\
-      &= \underline{\mathbf{Q}} \underline{\mathbf{G}}^T \underline{\mathbf{Q}}^T \qquad (\underline{\mathbf{Q}}=\underline{\mathbf{Q}}^T) \\
-      &= \underline{\mathbf{Q}} (\underline{\mathbf{Q}} \underline{\mathbf{G}})^T \\
-      &= \sqrt{\frac{2}{n}} \underline{\mathbf{S}}^{-1} \left( \left( \sqrt{\frac{n}{2}} \underline{\mathbf{S}}( \underline{\mathbf{G}}) \right)^T \right) \\
-      &= \underline{\mathbf{S}}^{-1} ((\underline{\mathbf{S}} (\underline{\mathbf{G}}))^T) \qquad \qquad \qquad \qquad \qquad \qquad \mathcal{O}(n^2 \log n)
-    \end{align*}
-
-  \item
-    \begin{equation*}
-      \widetilde{U}_{ji} = \frac{\widetilde{G}_{ji}}{\lambda_j+\lambda_i} \qquad \qquad \qquad \qquad \qquad \qquad \qquad \quad \mathcal{O}(n^2)
-    \end{equation*}
-
-  \item
-    \begin{align*}
-      \underline{\mathbf{U}} &= \underline{\mathbf{Q}} \underline{\mathbf{\widetilde{U}}} \underline{\mathbf{Q}}^T \\
-      &= \underline{\mathbf{Q}} ( \underline{\mathbf{Q}} \underline{\mathbf{\widetilde{U}}}^T)^T \\
-      &= \underline{\mathbf{S}}^{-1}((\underline{\mathbf{S}}(\underline{\mathbf{\widetilde{U}}}^T))^T) \qquad \qquad \qquad \qquad \qquad \qquad \qquad \mathcal{O}(n^2 \log n)
-    \end{align*}
+\item Compute $\tilde{\bm G}^\intercal$ in $\mathcal{O}(n^2\log n)$.
+  \begin{align*}
+    \tilde{\bm G} &= \bm Q^\intercal \bm G \bm Q \\
+    \Rightarrow \quad \tilde{\bm G}^\intercal &= \bm Q^\intercal \bm G^\intercal \bm Q\\
+                  &= \bm Q \bm G^\intercal \bm Q^\intercal \qquad (\bm Q = \bm Q^\intercal) \\
+                  &= \bm Q (\bm Q \bm G)^\intercal \\
+                  &= \sqrt{\frac{2}{n}}\bm S^{-1} \sqrt{\frac{n}{2}} (\bm S \bm G)^\intercal \\
+                  &= \bm S^{-1} (\bm S \bm G)^\intercal
+  \end{align*}
+\item Compute $\tilde{\bm U}^\intercal$ in $\mathcal{O}(n^2)$.
+  \begin{align*}
+    \tilde{U}_{ji} = \frac{\tilde{G}_{ji}}{\lambda_j + \lambda_i}
+  \end{align*}
+\item Compute $\bm U$ in $\mathcal{O}(n^2\log n)$.
+  \begin{align*}
+    \bm U &= \bm Q \tilde{\bm U} \bm Q^\intercal \\
+          &= \bm Q (\bm Q \tilde{\bm U}^\intercal)^\intercal \\
+          &= \bm S^{-1} (\bm S \tilde{\bm U}^\intercal)^\intercal
+  \end{align*}
 \end{enumerate}
 
-Again,
-
+Again, recall that
 \begin{equation*}
-  \underline{\mathbf{S}} = \frac{2}{n} \underline{\mathbf{S}}^{-1}
+  \bm S = \frac{2}{n}\bm S^{-1}
 \end{equation*}
-
-and $\underline{\widetilde{v}} = \underline{\mathbf{S}} \, \underline{v}$ is obtained as follows
-
-\renewcommand{\theenumi}{\roman{enumi}}
-\renewcommand{\labelenumi}{\textbf{\theenumi)}}
-
+and $\tilde{\bm v} = \bm S \bm v$ is obtained as
 \begin{enumerate}
-  \item
-    \begin{equation*}
-      \underline{v} \in \mathbb{R}^{n-1} \quad \rightarrow \quad \underline{w} \in \mathbb{R}^{2n}
-    \end{equation*}
-
-  \item
-    \begin{equation*}
-      \text{Compute } \underline{\hat{w}} \text{ via FFT } (\mathcal{O}(n \log n)).
-    \end{equation*}
-  \item
-    \begin{equation*}
-      \widetilde{v}_k = 2i \hat{w}_k, \qquad k=1,\ldots,n-1.
-    \end{equation*}
-
+\item $\bm v \in \mathbb{R}^{n-1} \quad \rightarrow \quad \bm w \in \mathbb{R}^{2n}$
+\item Compute $\hat{\bm w}$ via FFT in $\mathcal{O}(n \log n)$.
+\item $\tilde{v}_k = 2\text{i} \hat{w}_k, \qquad k=1,\ldots,n-1.$
 \end{enumerate}
 
-\newpage
 \subsubsection{Numerical results}
 
-\renewcommand{\theenumi}{$\bullet$}
-\renewcommand{\labelenumi}{\theenumi}
-\begin{enumerate}
-  \item
-    Diagonalization
+A diagonalization solver based on the FFT. The code was run on a PC, Pentium III
+with 512 MB RAM.
 
-  \item
-    DST (FFT)
-
-  \item
-    PC, Pentium III, 512 MB RAM
-
- \end{enumerate}
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=8cm]{Domain2D_ntimesn}
-\end{figure}
-
-\begin{align*}
-  \tau^n &= \text{ total simulation time (in seconds)} \\
-  \tau_1^n &= \frac{\tau}{n^2}
-\end{align*}
+We define $\tau(n)$ as the total simulation time (in seconds) and $\tau_1(n) =
+\tau(n)/n^2$ as the time spent per degree of freedom.
 
 \begin{table}[h]
+  \caption{
+    Simulation results for the numerical approximation of the two-dimensional
+    Poisson equation by the use of fast diagonalization techniques.
+  }
+  \label{tbl:numres-fft}
   \begin{center}
-    \begin{tabular}{|r|l|l|l|}
+    \bgroup\def\arraystretch{1.2}
+    \begin{tabular}{r|lll}
       \hline
-      $n$ & $\tau^n$ & $\tau_1^n$ & $\tau_1^n (m \times m)$ \\
-      \hline
+      $n$ & $\tau(n)$ & $\tau_1(n)$ & $\tau_1(n) (m \times m)$ \\
+      \hhline{====}
       $32$ & $2.36 \cdot 10^{-2}$ & $2.31 \cdot 10^{-5}$ & $1.76 \cdot 10^{-5}$ \\
       $64$ & $1.11 \cdot 10^{-1}$ & $2.71 \cdot 10^{-5}$ & $3.66 \cdot 10^{-5}$ \\
       $128$ & $5.19 \cdot 10^{-1}$ & $3.17 \cdot 10^{-5}$ & $7.34 \cdot 10^{-5}$ \\
@@ -873,111 +839,98 @@ and $\underline{\widetilde{v}} = \underline{\mathbf{S}} \, \underline{v}$ is obt
       $512$ & $10.5$ & $3.99 \cdot 10^{-5}$ & $3.96 \cdot 10^{-4}$ \\
       $1024$ & $46.2$ & $4.41 \cdot 10^{-5}$ & $8.33 \cdot 10^{-4}$ \\
       \hline
-      & $\tau^n \sim \mathcal{O}(n^2 \log n)$ & $\tau_1^n \sim \mathcal{O}(\log n)$ & $\tau_1^n \sim \mathcal{O}(n) $ \\
+      & $\sim \mathcal{O}(n^2 \log n)$ & $\sim \mathcal{O}(\log n)$ & $\sim \mathcal{O}(n) $ \\
       \hline
     \end{tabular}
+    \egroup
   \end{center}
-  \caption{Simulation results for the numerical approximation of the two-dimensional Poisson equation by the use of fast diagonalization techniques.}
+
 \end{table}
 
-\newpage
-\begin{verbatim}
-      program poisson
-c==================================================================
-c
-c     FORTRAN-program to solve the two-dimensional Poisson equation
-c     on a unit square using finite differences (five-point stencil),
-c     one-dimensional eigenvalue decompositions and fast sine transforms.
-c     In this example, the right hand side f=1.
-c
-c     note: n needs to be a power of 2
-c
-c     einar m. ronquist
-c     ntnu, october 2000
-c
-c===================================================================
-      parameter (n  = 256)
-      parameter (m  = n-1)
-      parameter (nn = 4*n)
-c
-      real*8    diag(m), b(m,m), bt(m,m)
-      real*8    pi
-      real*8    z(0:nn-1)
-      real*4    tarray(2), t1, t2, dt
+See \autoref{tbl:numres-fft}. The source code follows.
 
-      h    = 1./n
-      pi   = 4.*datan(1.)
+\begin{lstlisting}[style=fortran]
+  program poisson
 
-      do i=1,m
-         diag(i) = 2*(1-dcos(i*pi/n))
-      enddo
+  ! FORTRAN-program to solve the two-dimensional Poisson equation
+  ! on a unit square using finite differences (five-point stencil),
+  ! one-dimensional eigenvalue decompositions and fast sine transforms.
+  ! In this example, the right hand side f=1.
 
-      do j=1,m
-         do i=1,m
-            b(i,j) = h*h
-         enddo
-      enddo
+  ! note: n needs to be a power of 2
 
-      \end{verbatim}
-      \newpage
-      \begin{verbatim}
-      do j=1,m
-         call fst (b(1,j), n, z, nn)
-      enddo
-      call transp (bt, b, m)
-      do i=1,m
-         call fstinv (bt(1,i), n, z, nn)
-      enddo
+  ! Einar M. Ronquist
+  ! NTNU, October 2000
 
+  parameter (n  = 256)
+  parameter (m  = n-1)
+  parameter (nn = 4*n)
 
-      do j=1,m
-         do i=1,m
-            bt(i,j) = bt(i,j)/(diag(i)+diag(j))
-         enddo
-      enddo
+  real*8    diag(m), b(m,m), bt(m,m)
+  real*8    pi
+  real*8    z(0:nn-1)
+  real*4    tarray(2), t1, t2, dt
 
+  h    = 1./n
+  pi   = 4.*datan(1.)
 
-      do i=1,m
-         call fst (bt(1,i), n, z, nn)
-      enddo
-      call transp (b, bt, m)
-      do j=1,m
-         call fstinv (b(1,j), n, z, nn)
-      enddo
+  do i=1,m
+    diag(i) = 2*(1-dcos(i*pi/n))
+  enddo
 
+  do j=1,m
+    do i=1,m
+      b(i,j) = h*h
+    enddo
+  enddo
 
+  do j=1,m
+    call fst (b(1,j), n, z, nn)
+  enddo
+  call transp (bt, b, m)
+  do i=1,m
+    call fstinv (bt(1,i), n, z, nn)
+  enddo
 
-      umax = 0.0
-      do j=1,m
-         do i=1,m
-            if (b(i,j) .gt. umax) umax = b(i,j)
-         enddo
-      enddo
+  do j=1,m
+    do i=1,m
+      bt(i,j) = bt(i,j)/(diag(i)+diag(j))
+    enddo
+  enddo
 
-      write(6,*) ' '
-      write(6,*) umax
+  do i=1,m
+    call fst (bt(1,i), n, z, nn)
+  enddo
+  call transp (b, bt, m)
+  do j=1,m
+    call fstinv (b(1,j), n, z, nn)
+  enddo
 
-      stop
-      end
+  umax = 0.0
+  do j=1,m
+    do i=1,m
+      if (b(i,j) .gt. umax) umax = b(i,j)
+    enddo
+  enddo
 
-\end{verbatim}
-\newpage
-\begin{verbatim}
+  write(6,*) ' '
+  write(6,*) umax
 
-      subroutine transp (at, a, m)
-c====================================================
-c     set at equal to the transpose of a
-c====================================================
-      real*8 a(m,m), at(m,m)
+  stop
+  end
 
-      do j=1,m
-         do i=1,m
-            at(j,i) = a(i,j)
-         enddo
-      enddo
-      return
-      end
+  subroutine transp (at, a, m)
 
+  ! set at equal to the transpose of a
 
+  real*8 a(m,m), at(m,m)
 
-\end{verbatim}
+  do j=1,m
+    do i=1,m
+      at(j,i) = a(i,j)
+    enddo
+  enddo
+
+  return
+  end
+\end{lstlisting}
