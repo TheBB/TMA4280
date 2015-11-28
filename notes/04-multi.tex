@@ -69,7 +69,7 @@ solved in a single processor context, either because of the storage requirement,
 because of the computational cost, or both. From this view point, the definition
 of speedup in \eqref{multi:speedup} must be used with some care.
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
   \begin{tikzpicture}
     \begin{axis}[
@@ -122,7 +122,7 @@ organization is referred to as \emph{distributed memory access}. Each
 organization has its strengths and weaknesses. We will return to some of these
 issues later.
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
   \begin{tikzpicture}[scale=0.5]
     \foreach \i in {0,4,8}
@@ -143,7 +143,7 @@ issues later.
   \label{fig:multiprocess1}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
   \begin{tikzpicture}[scale=0.5]
     \foreach \i in {0,4,8}
@@ -179,7 +179,7 @@ due to the fact that the aggregate bandwidth is fixed. The use of caches could
 potentially alleviate some of this problem, but then the question of how to
 achieve cache coherency (or consistency) arises.
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
   \begin{tikzpicture}[scale=0.5]
     \foreach \i in {-1,3}
@@ -216,7 +216,7 @@ crossbar has a better scalability than a bus organization. The aggregate
 bandwidth is increased, but adding a processor becomes more and more expensive
 as the system size grows (because the number of parts increases).
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
   \begin{tikzpicture}[scale=0.5]
     \foreach \i in {0,3,6,9}
@@ -255,7 +255,7 @@ scalability relates to the cost. An example of a compromise between these two
 issues is the multistage interconnect; see
 \autoref{fig:multistage_interconnect}.
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
   \begin{tikzpicture}[scale=0.5]
     \foreach \i in {0,4,8,12}
@@ -306,10 +306,27 @@ An alternative to an SMP-organization is a NUMA-organization (\emph{Non-Uniform
 Memory Access}); see \autoref{fig:NUMA}. The last supercomputers at NTNU all
 represent examples of this type of organization.
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.6]{NUMA}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {3, 10}
+    {
+      \draw[darkblue, thick] (\i+1,-2) -- (\i+1,0);
+      \draw[darkblue, thick] (\i,-2) -- (\i+2,-2);
+
+      \draw[darkblue, fill=cadet, thick] (\i-2,-2.75) rectangle (\i,-1.25);
+      \node at (\i-1,-2) {M};
+
+      \draw[darkblue, fill=cadet, thick] (\i+2,-1.25) rectangle (\i+4,-4.25);
+      \draw[darkblue, very thin, dashed] (\i+2,-2.75) -- (\i+4,-2.75);
+      \node at (\i+3,-2) {\$};
+      \node at (\i+3,-3.5) {P};
+    }
+
+    \draw[red, very thick, <->] (0,0) -- (18,0);
+    \node[anchor=south] at (9,0) {Scalable network};
+    \node[anchor=west] at (15,-2) {$\cdots$};
+  \end{tikzpicture}
   \caption{A NUMA organization.}
   \label{fig:NUMA}
 \end{figure}
@@ -344,10 +361,19 @@ referred to as \emph{wormhole routing} and was developed by William Dally at
 MIT. The mesh interconnect was used on the Intel Paragon and the Intel Delta
 supercomputers (in the 90s).
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.6]{2Dmesh}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \foreach \i in {0,...,3} {
+      \draw[very thick, red] (\i,0) -- (\i,3);
+      \draw[very thick, red] (0,\i) -- (3,\i);
+    }
+    \foreach \i in {0,...,3} {
+      \foreach \j in {0,...,3} {
+        \draw[thick, darkblue, fill=cadet] (\i,\j) circle (0.1);
+      }
+    }
+  \end{tikzpicture}
   \caption{
     A 2D mesh interconnect. Each circle represents a processing element: a CPU,
     local cache, and a local memory, i.e., a single processor. Such a processing
@@ -364,10 +390,31 @@ reduce the worst-case hop count.
 Further extensions of the mesh interconnect are the 3D mesh or 3D toroid network
 topology (e.g. used on the Cray T3D and Cray T3E supercomputers).
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.55]{2Dtoroid}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \foreach \i in {0,...,3} {
+      \draw[very thick, red] (\i,0) -- (\i,3);
+      \draw[very thick, red] (0,\i) -- (3,\i);
+    }
+    \foreach \i in {0,...,3} {
+      \draw[thick, red] (\i,0) arc (180:360:0.15);
+      \draw[thick, red] (\i+0.3,3) arc (0:180:0.15);
+      \draw[thick, red] (0,\i) arc (90:270:0.15);
+      \draw[thick, red] (3,\i-0.3) arc (270:450:0.15);
+    }
+    \foreach \i in {0,...,2} {
+      \draw[thick, red, densely dashed] (\i+0.3,0) -- (\i+0.3,3);
+      \draw[thick, red, densely dashed] (0,\i+0.7) -- (3,\i+0.7);
+    }
+    \draw[thick, red] (3.3,0) -- (3.3,3);
+    \draw[thick, red] (0,-0.3) -- (3,-0.3);
+    \foreach \i in {0,...,3} {
+      \foreach \j in {0,...,3} {
+        \draw[thick, darkblue, fill=cadet] (\i,\j) circle (0.1);
+      }
+    }
+  \end{tikzpicture}
   \caption{A 2D toroid interconnect.}
   \label{fig:2Dtoroid}
 \end{figure}
@@ -377,10 +424,53 @@ This type of interconnect was attractive before the wormhole-routing. The whole
 message was typically passed through one hop before the next hop could start,
 something which resulted in very long communication times.
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.45]{hypercube}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \draw[thick, darkblue, fill=cadet] (0,0) circle (0.1);
+    \node[anchor=north] at (0,-1) {$d=0$};
+
+    \draw[very thick, red] (2,-0.5) -- (2,0.5);
+    \draw[thick, darkblue, fill=cadet] (2,-0.5) circle (0.1);
+    \draw[thick, darkblue, fill=cadet] (2,0.5) circle (0.1);
+    \node[anchor=north] at (2,-1) {$d=1$};
+
+    \foreach \i in {-0.5,0.5} {
+      \draw[very thick, red] (4+\i,-0.5) -- (4+\i,0.5);
+      \draw[very thick, red] (3.5,\i) -- (4.5,\i);
+    }
+    \foreach \i in {3.5,4.5} {
+      \foreach \j in {-0.5,0.5} {
+        \draw[thick, darkblue, fill=cadet] (\i,\j) circle (0.1);
+      }
+    }
+    \node[anchor=north] at (4,-1) {$d=2$};
+
+    \foreach \i in {-0.5,0.5} {
+      \draw[very thick, red] (6+\i,-0.5) -- (6+\i,0.5);
+      \draw[very thick, red] (5.5,\i) -- (6.5,\i);
+    }
+    \draw[very thick, red] (5.5,0.5) -- (6.1,0.8);
+    \draw[very thick, red] (6.5,0.5) -- (7.1,0.8);
+    \draw[very thick, red] (6.5,-0.5) -- (7.1,-0.2);
+    \draw[very thick, red] (6.1,0.8) -- (7.1,0.8);
+    \draw[very thick, red] (7.1,-0.2) -- (7.1,0.8);
+    \draw[very thick, red] (6.5,-0.2) -- (7.1,-0.2);
+    \draw[very thick, red] (6.1,0.5) -- (6.1,0.8);
+    \draw[very thick, red, densely dashed] (5.5,-0.5) -- (6.1,-0.2);
+    \draw[very thick, red, densely dashed] (6.1,-0.2) -- (6.1,0.5);
+    \draw[very thick, red, densely dashed] (6.1,-0.2) -- (6.5,-0.2);
+    \foreach \i in {5.5,6.5} {
+      \foreach \j in {-0.5,0.5} {
+        \draw[thick, darkblue, fill=cadet] (\i,\j) circle (0.1);
+        \draw[thick, darkblue, fill=cadet] (\i+0.6,\j+0.3) circle (0.1);
+      }
+    }
+    \node[anchor=north] at (6,-1) {$d=3$};
+
+    \node at (8,0.2) {\Huge ?};
+    \node[anchor=north] at (8,-1) {$d=4$};
+  \end{tikzpicture}
   \caption{
     A $d$-dimensional hypercube has $2^d$ nodes (or processing elements), and
     the longest ``distance'' (number of hops) between any two nodes is $d$.
@@ -413,10 +503,29 @@ both cases, the global address space is available to every processor; hence, the
 term shared memory. A programming model for shared memory machines exists, and
 the current de facto standard is OpenMP; see \url{http://openmp.org}.
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.5]{SMP}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {3, 10}
+    {
+      \draw[darkblue, thick] (\i+1,-2) -- (\i+1,0);
+      \draw[darkblue, thick] (\i,-2) -- (\i+2,-2);
+
+      \draw[darkblue, fill=cadet, thick] (\i-2,-2.75) rectangle (\i,-1.25);
+      \node at (\i-1,-2) {M};
+
+      \draw[darkblue, fill=cadet, thick] (\i+2,-1.25) rectangle (\i+4,-4.25);
+      \draw[darkblue, very thin, dashed] (\i+2,-2.75) -- (\i+4,-2.75);
+      \node at (\i+3,-2) {\$};
+      \node at (\i+3,-3.5) {P};
+    }
+
+    \draw[red, very thick, <->] (0,0) -- (18,0);
+    \node[anchor=south] at (9,0) {Interconnect};
+    \node[anchor=west] at (15,-2) {$\cdots$};
+
+    \draw[dashed, very thick] (-1,-5.25) rectangle (19,1.5);
+  \end{tikzpicture}
   \caption{
     A Symmetric Multi-Processor (SMP)---sometimes also referred to as a node. A
     node typically comprises 16--64 processors with a cache-coherent uniform
@@ -425,10 +534,30 @@ the current de facto standard is OpenMP; see \url{http://openmp.org}.
   \label{fig:SMP}
 \end{figure}
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.7]{ccNUMA}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[
+    scale=0.5,
+    block/.style={
+      minimum height=2,
+      minimum width=2,
+      shape=rectangle,
+      fill=cadet,
+      draw=darkblue,
+      rounded corners=1mm,
+      text centered,
+      thick,
+    }
+    ]
+    \foreach \i in {4.5, 7.5, 10.5, 13.5} {
+      \node[block, anchor=north] at (\i,-1) {SMP};
+      \draw[very thick, darkblue] (\i,0) -- (\i,-1);
+    }
+    \draw[red, very thick, <->] (0,0) -- (18,0);
+    \node[anchor=south] at (9,0) {Interconnect};
+    \node[anchor=north] at (16.5,-1.2) {$\cdots$};
+    \node[anchor=north] at (1.5,-1.2) {$\cdots$};
+  \end{tikzpicture}
   \caption{
     A ccNUMA supercomputer may comprise several SMP nodes, all linked together
     by an interconnecting network. All the caches are kept coherent, however,
@@ -451,10 +580,27 @@ between the \emph{programming model} we choose and the particular \emph
 {machine} we use. On the other hand, if we had chosen a shared memory
 programming model, we could only use the program on a shared memory machine.
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.7]{MIMD}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \foreach \i in {3, 10}
+    {
+      \draw[darkblue, thick] (\i+1,-2) -- (\i+1,0);
+      \draw[darkblue, thick] (\i,-2) -- (\i+2,-2);
+
+      \draw[darkblue, fill=cadet, thick] (\i-2,-2.75) rectangle (\i,-1.25);
+      \node at (\i-1,-2) {M};
+
+      \draw[darkblue, fill=cadet, thick] (\i+2,-1.25) rectangle (\i+4,-4.25);
+      \draw[darkblue, very thin, dashed] (\i+2,-2.75) -- (\i+4,-2.75);
+      \node at (\i+3,-2) {\$};
+      \node at (\i+3,-3.5) {P};
+    }
+
+    \draw[red, very thick, <->] (0,0) -- (18,0);
+    \node[anchor=south] at (9,0) {Interconnect (message passing)};
+    \node[anchor=west] at (15,-2) {$\cdots$};
+  \end{tikzpicture}
   \caption{
     A distributed memory computer. Only the local address space is accessible to
     each processor. Different processors can only communicate via explicit
@@ -484,7 +630,7 @@ resources for calculation available. If your code is already efficiently
 supplying data to one of the instruction streams, the use of hyperthreading
 might actually harm performance.
 
-\begin{figure}[htbp]
+\begin{figure}
   \begin{center}
     \includegraphics[scale=0.5]{sandy}
   \end{center}
@@ -570,10 +716,29 @@ the local and remote processes cooperate e.g. via a send and receive
 operation. MPI-2 represents an extension of MPI where features like one-sided
 messages, parallel I/O, etc. are included.
 
-\begin{figure}[htbp]
-  \begin{center}
-    \includegraphics[scale=0.6]{message_passing_model}
-  \end{center}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[
+    proc/.style={shape=circle, draw=darkblue, fill=cadet, thick},
+    msg/.style={shape=rectangle, draw=darkblue, fill=cadet, thick, rounded corners=0.5mm},
+    env/.style={minimum height=1.7cm, minimum width=1.7cm},
+    scale=0.7,
+    ]
+    \node[proc] (p0) at (0,0) {$P_0$};
+    \node[proc] (p1) at (1,3) {$P_1$};
+    \node[proc] (p2) at (3,-0.6) {$P_2$};
+    \node[proc] (p3) at (6,3.6) {$P_3$};
+    \node[msg] (msg) at (4.0, 1.5) {\scriptsize Message};
+    \node[msg, env, fill=cadet!55] (env) at (8, -2.0) {};
+    \node[msg, very thin] (body) at (8, -1.7) {\scriptsize Body};
+    \node[below of=body, node distance=6mm] {\scriptsize Envelope};
+    \draw[->, thick] (p2) edge[bend right] node [right] {} (msg);
+    \draw[->, thick] (msg) edge[bend right] node [right] {} (p1);
+    \draw[->, thick] (env) edge[bend right] node [right] {} (msg);
+
+    \node[msg] (smp) at (-2,-2) {\scriptsize SMP};
+    \draw[->, thick] (smp) edge[bend left] node [right] {} (p0);
+  \end{tikzpicture}
   \caption{
     The message passing model. A number of processes, $P_0, P_1, \ldots,
     P_{n-1}$, are coupled together via a fast or a slow communication network.
