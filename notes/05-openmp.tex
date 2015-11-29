@@ -46,9 +46,13 @@ such as GCC or Clang, as well as in professional versions of Microsoft Visual
 Studio.
 
 \begin{figure}
-  \begin{center}
-    \includegraphics[width=10cm]{mpi}
-  \end{center}
+  \centering
+  \begin{tikzpicture}
+    \foreach \i in {0,...,2} {
+      \draw[darkblue, very thick] (0,-\i) -- (9,-\i);
+      \node[anchor=west] at (9,-\i) {Process \i};
+    }
+  \end{tikzpicture}
   \caption{
     An illustration of the MPI programming model. We have several independent
     processes, and each of these processes have their own separate program
@@ -71,9 +75,16 @@ program flow in the \texttt{MPI\_Recv} call until it has received the expected
 message.
 
 \begin{figure}
-  \begin{center}
-    \includegraphics[width=10cm]{openmp}
-  \end{center}
+  \centering
+  \begin{tikzpicture}
+    \draw[darkblue, very thick] (0,0) -- (9,0);
+    \draw[darkblue, very thick] (3,1) -- (6,1) -- (7,0) -- (6,-1) -- (3,-1) -- (2,0) -- (3,1);
+    \node[anchor=south] at (8,0) {\scriptsize Process 0};
+    \node[anchor=south] at (1,0) {\scriptsize Process 0};
+    \node[anchor=south] at (4.5,0) {\scriptsize Process 0};
+    \node[anchor=south] at (4.5,1) {\scriptsize Process 1};
+    \node[anchor=south] at (4.5,-1) {\scriptsize Process 2};
+  \end{tikzpicture}
   \caption{
     An illustration of the \texttt{OpenMP} programming model. We only have a
     single process, hence the main program flow only happens on a single
@@ -136,9 +147,17 @@ be a brief introduction, we will not discuss these issues further in the
 following.
 
 \begin{figure}
-  \begin{center}
-    \includegraphics[width=10cm]{CriticalSection}
-  \end{center}
+  \centering
+  \begin{tikzpicture}[scale=0.5]
+    \draw[very thick] (-6,4) -- (-3,1) -- (3,1) -- (6,4);
+    \draw[very thick] (-6,-4) -- (-3,-1) -- (3,-1) -- (6,-4);
+    \draw[darkblue, ->] (-2.5,0) -- (2.5,0);
+    \foreach \i in {-2,...,2} {
+      \draw[darkblue, ->] (-8,\i) -- (-5,\i);
+      \draw[darkblue, ->] (5,\i) -- (8,\i);
+    }
+    \node[anchor=south] at (0,1) {\scriptsize Critical section};
+  \end{tikzpicture}
   \caption{
     Illustration of a critical section. The incoming arrows represents the
     threads. All the threads are running concurrently, until they need to enter
@@ -268,7 +287,7 @@ a number of iterations to each thread, and then sum up the results afterwards.
 OpenMP makes this convenient through the reduction directive
 \lstinputlisting[style=c]{openmp-integrate.c}
 
-\section{Compiling and running an \texttt{OpenMP} application}
+\section{Compiling and running an OpenMP application}
 
 We have a source file called \emph{openmp.c}, and we want to compile this with
 OpenMP directives enabled. On a standard Linux computer this can be achieved by
