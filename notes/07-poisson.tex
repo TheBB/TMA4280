@@ -87,9 +87,17 @@ into \eqref{energy-div} gives
 to be solved for the temperature $u$.
 
 \begin{figure}
-  \begin{center}
-    \includegraphics[scale=0.5]{HeatFlux}
-  \end{center}
+  \centering
+  \begin{tikzpicture}
+    \draw[thick] plot [smooth cycle, tension=1.0] coordinates {
+      (0,-0.1) (1.5,-1.3) (5.3,0.4) (2.5,1)};
+    \node at (2.5,0) {$\Omega$};
+    \draw[darkblue, thick, ->] (5.3,0.4) -- (5.8,0.28);
+    \node[anchor=west] at (5.8,0.28) {$\bm n$};
+    \draw[darkblue, thick, ->] (5.3,0.4) -- (5.6,0.9);
+    \node[anchor=south] at (5.6,0.9) {$\bm q$};
+    \draw[darkblue, fill=cadet, thick] (5.3,0.4) circle (0.07);
+  \end{tikzpicture}
   \caption{
     The domain $\Omega$ and a surface element on the boundary
     $\partial\Omega$. The outward unit normal vector ${\bm n}$ is indicated,
