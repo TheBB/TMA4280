@@ -1,0 +1,52 @@
+\documentclass{beamer}
+
+\usetheme{CambridgeUS}
+\usecolortheme{orchid}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Math
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\graphicspath{{../figs/}}
+
+% Colors
+\definecolor{darkblue}{HTML}{00688B}
+\definecolor{darkgreen}{HTML}{6E8B3D}
+\definecolor{cadet}{HTML}{DAE1FF}
+\definecolor{salmon}{HTML}{FFB08A}
+
+% Listings
+\usepackage{textcomp}
+\usepackage{listings}
+\lstset{
+  keywordstyle=\bfseries\color{orange},
+  stringstyle=\color{darkblue!80},
+  commentstyle=\color{darkblue!80},
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  upquote=true,
+}
+\lstdefinestyle{fortran}{
+  language=Fortran,
+  morekeywords={for},
+  deletekeywords={status},
+}
+\lstdefinestyle{c}{
+  language=C,
+  morekeywords={include},
+}
+\lstdefinestyle{shell}{
+  language=bash,
+}
+
+\subtitle{TMA4280---Introduction to Supercomputing}
+
+\begin{document}

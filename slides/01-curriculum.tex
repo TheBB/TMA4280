@@ -1,0 +1,110 @@
+\input{preamble}
+
+\title{Curriculum}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Supercomputer history and hardware architecture}
+  \begin{center}
+    \includegraphics[height=0.6\textheight]{njord_1}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{An UNIX crash course---ssh, bash, build systems (CMake)}
+  \begin{center}
+    \includegraphics[width=6cm]{crash}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed memory programming with MPI}
+  \begin{center}
+    \texttt{node 0: Hello, world} \\
+    \texttt{node 1: Hello, world} \\
+    \texttt{node 3: Hello, world} \\
+    \texttt{node 2: Hello, world}
+  \end{center}
+  \begin{center}
+    \includegraphics[width=3cm]{open-mpi-logo}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared memory programming with OpenMP}
+  \begin{center}
+    \texttt{\#pragma omp parallel for schedule(static)}
+  \end{center}
+  \begin{center}
+    \includegraphics[width=4cm]{openmp}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Heterogeneous computing with CUDA}
+  \begin{center}
+    \texttt{int row = blockIdx.x*blockDim.x+threadIdx.x;}
+  \end{center}
+  \begin{center}
+    \includegraphics[width=4cm]{cuda}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallell I/O with MPI-IO}
+  \begin{center}
+    \includegraphics[width=8cm]{serial}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Poisson problem: finite differences}
+  \[
+    \begin{split}
+      -\nabla^2 u &= f \\
+      u_{\partial\Omega} &= g
+    \end{split}
+  \]
+  \begin{center}
+    \includegraphics[width=4cm]{FivePointStencil}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Poisson problem: Diagonalization methods}
+  \begin{enumerate}
+  \item Compute $\tilde{\bm G}$ using matrix-matrix products
+    \begin{equation*}
+      \tilde{\bm G} = \bm Q^\intercal \bm G \bm Q.
+    \end{equation*}
+  \item Solve for $\tilde{\bm U}$.
+    \begin{align*}
+      \bm \Lambda \tilde{\bm U} + \tilde{\bm U} \bm \Lambda &= \tilde{\bm G} \\
+      \lambda_i \tilde{u}_{ij} + \tilde{u}_{ij} \lambda_j &= \tilde{g}_{ij} \\
+      \tilde{u}_{ij} &= \frac{\tilde{g}_{ij}}{\lambda_i + \lambda_j}
+    \end{align*}
+  \item Compute $\bm U$ using matrix-matrix products
+    \begin{equation*}
+      \bm U = \bm Q \tilde{\bm U} \bm Q^\intercal
+    \end{equation*}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The conjugate gradient method}
+  \begin{center}
+    \includegraphics[width=4cm]{cg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Poisson problem: Domain decomposition}
+  \begin{center}
+    \includegraphics[width=8cm]{dd}
+  \end{center}
+\end{frame}
+
+\input{postamble}

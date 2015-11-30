@@ -8,3 +8,8 @@
 *.out
 *.bbl
 *.blg
+*.nav
+*.snm
+*.toc
+/slides/01-curriculum.pdf
+*.vrb
