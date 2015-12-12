@@ -21,7 +21,8 @@ int main(int argc, char **argv)
 
     double h = 1.0 / (double)nintervals;
     double sum = 0.0;
-    for (int i = rank; i < nintervals; i += nprocs) {
+    int i;
+    for (i = rank; i < nintervals; i += nprocs) {
         double x = h * ((double)i + 0.5);
         sum += 4.0 / (1.0 + x * x);
     }
