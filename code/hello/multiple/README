@@ -1,0 +1,5 @@
+To build:
+
+gcc -c -o hello.o hello.c
+gcc -c -o utils.o utils.c
+gcc -o hello hello.o utils.o

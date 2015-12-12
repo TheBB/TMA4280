@@ -1,0 +1,7 @@
+To build:
+
+mpicc -o hello hello.c
+
+To run:
+
+mpirun -np 12 ./hello

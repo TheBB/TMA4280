@@ -1,0 +1,13 @@
+To build:
+
+gcc -c -o hello_utils.o hello_utils.c
+gcc -c -o goodbye_utils.o goodbye_utils.c
+ar r libutils.a hello_utils.o goodbye_utils.o
+
+gcc -c -o main.o main.c
+gcc -o hello main.o libutils.a
+(gcc -o hello main.o -L. -lutils)
+
+gcc -c -o main_reversed.o main_reversed.c
+gcc -o hello_reversed main_reversed.o libutils.a
+(gcc -o hello_reversed main_reversed.o -L. -lutils)

@@ -1,0 +1,7 @@
+To build:
+
+mpifort -o hello hello.f90
+
+To run:
+
+mpirun -np 12 ./hello
