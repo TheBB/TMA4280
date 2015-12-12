@@ -20,7 +20,6 @@ int main(int argc, char **argv)
     if (rank == 0) {
         time_start = MPI_Wtime();
     }
-    /* MPI_Bcast(&nintervals, 1, MPI_INT, 0, MPI_COMM_WORLD); */
 
     double h = 1.0 / (double)nintervals;
     double sum = 0.0;
