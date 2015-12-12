@@ -5,19 +5,22 @@
 
 int main(int argc, char **argv)
 {
+    if (argc < 2) {
+        printf("Requires argument: number of intervals.");
+        return 1;
+    }
+
     int nprocs, rank;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    int nintervals;
+    int nintervals = atoi(argv[1]);
     double time_start;
     if (rank == 0) {
-        printf("Enter number of intervals: \n");
-        scanf("%d", &nintervals);
         time_start = MPI_Wtime();
     }
-    MPI_Bcast(&nintervals, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    /* MPI_Bcast(&nintervals, 1, MPI_INT, 0, MPI_COMM_WORLD); */
 
     double h = 1.0 / (double)nintervals;
     double sum = 0.0;
