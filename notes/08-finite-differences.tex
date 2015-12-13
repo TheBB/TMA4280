@@ -391,22 +391,23 @@ We note that each unknown value $u_{i,j}$ is coupled to its nearest neighbors
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}[
-    every node/.style={
-      shape=circle,
-      thick,
-      fill=cadet,
-      draw=darkblue,
-      minimum size=1cm,
-    }]
-    \draw[thick, darkblue] (-2,0) -- (2,0);
-    \draw[thick, darkblue] (0,-2) -- (0,2);
-    \node at (-2,0) {$-1$};
-    \node at (2,0) {$-1$};
-    \node at (0,-2) {$-1$};
-    \node at (0,2) {$-1$};
-    \node at (0,0) {$+4$};
-  \end{tikzpicture}
+  \input{\figs/five-point-stencil}
+  % \begin{tikzpicture}[
+  %   every node/.style={
+  %     shape=circle,
+  %     thick,
+  %     fill=cadet,
+  %     draw=darkblue,
+  %     minimum size=1cm,
+  %   }]
+  %   \draw[thick, darkblue] (-2,0) -- (2,0);
+  %   \draw[thick, darkblue] (0,-2) -- (0,2);
+  %   \node at (-2,0) {$-1$};
+  %   \node at (2,0) {$-1$};
+  %   \node at (0,-2) {$-1$};
+  %   \node at (0,2) {$-1$};
+  %   \node at (0,0) {$+4$};
+  % \end{tikzpicture}
   \caption{
     Weights in the five-point finite difference stencil for the approximation of
     $-h^2\nabla^2$.
