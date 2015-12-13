@@ -155,7 +155,7 @@ operation is utterly memory bandwidth bound and not much can be done wrong.
     (implemented as a single loop), compared with the performance using BLAS.
   }
   \label{tab:tab9}
-  \input{data/linalg/Table5.tex}
+  \input{\data/linalg/Table5.tex}
 \end{table}
 
 \begin{table}
@@ -165,7 +165,7 @@ operation is utterly memory bandwidth bound and not much can be done wrong.
     BLAS.
   }
   \label{tab:tab10}
-  \input{data/linalg/Table6.tex}
+  \input{\data/linalg/Table6.tex}
 \end{table}
 
 \section{Matrix-matrix multiplication}
@@ -279,7 +279,7 @@ optimization level.
 \begin{table}
   \caption{Standard mxm (triple-nested loop) using C, compared with BLAS.}
   \label{table:tab1}
-  \input{data/linalg/Table1.tex}
+  \input{\data/linalg/Table1.tex}
 \end{table}
 
 As can be seen from \autoref{table:tab1}, the compiler optimization level had
@@ -303,7 +303,7 @@ obtained performance.
     BLAS.
   }
   \label{table:tab2}
-  \input{data/linalg/Table2.tex}
+  \input{\data/linalg/Table2.tex}
 \end{table}
 
 We see that the language utilized greatly influnces the performance of this
@@ -321,13 +321,13 @@ the results in \Autoref{table:convergence_C, table:convergence_F}.
 \begin{table}
   \caption{``Manually'' unrolled innermost loop (\texttt{mxm\_unr}), C.}
   \label{table:convergence_C}
-  \input{data/linalg/Table3.tex}
+  \input{\data/linalg/Table3.tex}
 \end{table}
 
 \begin{table}
   \caption{``Manually'' unrolled innermost (\texttt{mxm\_unr}), Fortran.}
   \label{table:convergence_F}
-  \input{data/linalg/Table4.tex}
+  \input{\data/linalg/Table4.tex}
 \end{table}
 
 We do not observe much performance increase for either case. It seems that this is a trick

@@ -1,0 +1,27 @@
+\begin{tikzpicture}
+  \begin{axis}[
+    date coordinates in=x,
+    ymode=log,
+    xticklabel=\year,
+    xmin=1993-05-01,
+    xmax=2015-10-01,
+    width=0.8\textwidth,
+    height=0.6\textwidth,
+    ytick={1, 1000, 1000000, 1000000000},
+    yticklabels={$\SI{1}{\giga\flop}$, $\SI{1}{\tera\flop}$, $\SI{1}{\peta\flop}$, $\SI{1}{\exa\flop}$},
+    grid=major,
+    legend style={at={(1,0)}, anchor=south east},
+    legend cell align=left,
+    ]
+    \addplot[mark=o, mark size=1.3, draw=darkgreen, thick]
+    table[x=date, y=sum, col sep=comma]
+    {\data/performance-development.csv};
+    \addplot[mark=o, mark size=1.3, draw=red, thick]
+    table[x=date, y=high, col sep=comma]
+    {\data/performance-development.csv};
+    \addplot[mark=o, mark size=1.3, draw=magenta, thick]
+    table[x=date, y=low, col sep=comma]
+    {\data/performance-development.csv};
+    \legend{Sum, Highest, Lowest};
+  \end{axis}
+\end{tikzpicture}

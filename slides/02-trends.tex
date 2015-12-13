@@ -1,0 +1,74 @@
+\input{preamble}
+
+\title{Trends in supercomputing}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Top 500 systems}
+  \begin{center}
+    \input{\figs/performance-development}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Supercomputers at NTNU}
+  A supercomputing center was established in 1986. \\~\\
+  \begin{center}
+    \scalebox{0.8}{
+      \input{\data/history}
+    }
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Previous supercomputer at NTNU}
+  \begin{center}
+    \includegraphics[height=0.6\textheight]{njord_2} \\
+    \emph{Njord}: 3000 processors.
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Current supercomputer at NTNU}
+  \begin{center}
+    \includegraphics[height=0.6\textheight]{vilje} \\
+    \emph{Vilje}: 22500 processors.
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Current supercomputer at NTNU}
+  \begin{itemize}
+  \item Full name: \texttt{vilje.hpc.ntnu.no}
+  \item System: SGI Altix ICE
+  \item Type: Distributed SMP
+  \item Nodes: 1404
+  \item Each node is a shared memory system with two octa-core chips and
+    $\SI{32}{\giga\byte}$ memory.
+  \item Physical cores: 22464
+  \item Logical cores: 44928
+  \item CPU: Intel Xeon (Sandy Bridge)
+  \item Theoretical peak performance: $\SI{479.23}{\tera\flop}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: weather forecasting}
+  \begin{center}
+    \includegraphics[height=0.7\textheight]{met} \\
+    For more information, see \url{http://met.no}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: climate modelling}
+  \begin{center}
+    \includegraphics[height=0.7\textheight]{climate_model} \\
+    For more information, see \url{http://www.bjerknes.uib.no}
+  \end{center}
+\end{frame}
+
+\input{postamble}

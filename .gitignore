@@ -11,5 +11,5 @@
 *.nav
 *.snm
 *.toc
-/slides/01-curriculum.pdf
+/slides/*.pdf
 *.vrb

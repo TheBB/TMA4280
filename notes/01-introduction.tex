@@ -351,33 +351,7 @@ since then.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-      date coordinates in=x,
-      ymode=log,
-      xticklabel=\year,
-      xmin=1993-05-01,
-      xmax=2015-10-01,
-      width=\textwidth,
-      height=0.4\textheight,
-      ytick={1, 1000, 1000000, 1000000000},
-      yticklabels={$\SI{1}{\giga\flop}$, $\SI{1}{\tera\flop}$, $\SI{1}{\peta\flop}$, $\SI{1}{\exa\flop}$},
-      grid=major,
-      legend style={at={(1,0)}, anchor=south east},
-      legend cell align=left,
-      ]
-      \addplot[mark=o, mark size=1.3, draw=darkgreen, thick]
-      table[x=date, y=sum, col sep=comma]
-      {data/performance-development.csv};
-      \addplot[mark=o, mark size=1.3, draw=red, thick]
-      table[x=date, y=high, col sep=comma]
-      {data/performance-development.csv};
-      \addplot[mark=o, mark size=1.3, draw=magenta, thick]
-      table[x=date, y=low, col sep=comma]
-      {data/performance-development.csv};
-      \legend{Sum, Highest, Lowest};
-    \end{axis}
-  \end{tikzpicture}
+  \input{\figs/performance-development}
   \caption{
     The performance development since 1993 for the top 500 supercomputers in the
     world. In particular, the figure indicates the performance development for
@@ -393,23 +367,7 @@ since then.
     as not all machines were not available at when revising this document.
   }
   \centering
-  \bgroup\def\arraystretch{1.2}
-  \begin{tabular}{llrlr}
-    \hline
-    Year & System & Processors & Type & $\SI{}{\giga\flop}$\footnote{maximal theoretical performance in $\SI{}{\giga\flop}$} \\
-    \hhline{=====}
-    1986--1992 & Cray X-MP & 2 & Vector & 0.5 \\
-    1992--1996 & Cray Y-MP & 4 & Vector & 1.3\\
-    1995--2003 & Cray J90     & 8 & Vector & 1.6 \\
-    1992--1999 & Intel Paragon & 56 & MPP & 5.0\\
-    1996--2003 & Cray T3E & 96 & MPP & 58\\
-    2000--2001 & SGI O2 & 160 & ccNUMA & 100\\
-    2001--2008 & SGI O3 & 898 & ccNUMA & 1000\\
-    2006--2011 & IBM P5+ & 2976 & Distributed SMP & 23500\\
-    2012--     & SGI Altix ICE X & 23040 & Distributed SMP & 497230 \\
-    \hline
-  \end{tabular}
-  \egroup
+  \input{\data/history}
   \label{tab:history-ntnu}
 \end{table}
 
@@ -432,10 +390,19 @@ this system. Some of the key characteristics of this system are:
 \begin{figure}
   \centering
   \includegraphics[width=0.6\textwidth]{njord_2}
-  \includegraphics[width=0.6\textwidth]{njord_1}
   \caption{
-    Photos of \emph{Njord}, the previous IBM supercomputer system at NTNU.
-    Courtesy of Arve Dispen.
+    \emph{Njord}, the previous IBM supercomputer system at NTNU. Courtesy of
+    Arve Dispen.
+  }
+  \label{fig:njord}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.6\textwidth]{vilje}
+  \caption{
+    Photo of \emph{Vilje}, the current SGI supercomputer at NTNU.
+    Source: NTNU HPC Wiki.
   }
   \label{fig:njord}
 \end{figure}

@@ -9,6 +9,15 @@
 % Paths
 \newcommand{\figs}{../figs}
 
+% URL styles
+\usepackage{url}
+\urlstyle{sf}
+\newcommand{\data}{../data}
+
+% Units
+\usepackage[detect-weight=true, binary-units=true]{siunitx}
+\DeclareSIUnit\flop{Flops}
+
 % Math
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -56,6 +65,9 @@
 \lstdefinestyle{shell}{
   language=bash,
 }
+
+% Double hlines
+\usepackage{hhline}
 
 \subtitle{TMA4280---Introduction to Supercomputing}
 
