@@ -1,4 +1,5 @@
 project(hello)
+enable_language(C)
 cmake_minimum_required(VERSION 2.6)
 
 set(UTILS_SRC hello_utils.c goodbye_utils.c)
