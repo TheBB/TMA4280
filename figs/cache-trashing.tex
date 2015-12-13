@@ -1,0 +1,33 @@
+\begin{tikzpicture}[scale=0.3]
+  \def \n {7};
+  \def \k {3};
+  \def \q {1};
+
+  \foreach \i [
+  evaluate=\i as \R using -(\n+1)*\i,
+  evaluate=\i as \L using -(\n+1)*(\i+1),
+  ] in {0,...,\k}
+  {
+    \fill[cadet] (\R-\q, 0) -- (\R-\q, -2) -- (\R-\q-1, -2) -- (\R-\q-1, 0) -- (\R-\q, 0);
+    \draw[darkblue, very thick] (\R, 0) -- (\R, -2) -- (\L, -2) -- (\L, 0) -- (\R, 0);
+    \foreach \j [
+    evaluate=\j as \l using \R-\j
+    ] in {1,...,\n}
+    {
+      \draw[darkblue, very thin] (\l, 0) -- (\l, -2);
+    }
+  }
+
+  \fill[cadet] (-\q, 3) -- (-\q, 1) -- (-\q-1, 1) -- (-\q-1, 3) -- (-\q, 3);
+  \draw[darkblue, very thick] (0, 3) -- (0, 1) -- (-\n-1, 1) -- (-\n-1, 3) -- (0, 3);
+  \foreach \j in {1,...,\n} {
+    \draw[darkblue, very thin] (0-\j, 3) -- (0-\j, 1);
+  }
+
+  \node[anchor=west] at (0, -1) {RAM};
+  \node[anchor=west] at (0, 2) {Cache};
+  \node[anchor=north] at (-\q-0.5, -2) {\scriptsize $a(i)$};
+  \node[anchor=north] at (-\n-1-\q-0.5, -2) {\scriptsize $b(i)$};
+  \node[anchor=north] at (-\n-\n-2-\q-0.5, -2) {\scriptsize $c(i)$};
+  \node[anchor=south] at (-\q-0.5, 3) {\scriptsize ??};
+\end{tikzpicture}

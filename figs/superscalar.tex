@@ -1,0 +1,16 @@
+\begin{tikzpicture}[
+  block/.style={
+    draw=darkblue,
+    fill=cadet,
+    shape=rectangle,
+    rounded corners=1mm,
+    minimum height=12mm,
+    minimum width=12mm,
+  },
+  pinin/.style={pin edge={to-, thick, darkblue}},
+  pinout/.style={pin edge={-to, thick, darkblue}},
+  ]
+  \node[block, pin={[pinin]above:$\gamma$}, pin={[pinin]left:$b(i)$}] (mult) {$\times$};
+  \node[block, right=20mm of mult, pin={[pinin]above:$a(i)$}, pin={[pinout]right:$c(i)$}] (add) {$+$};
+  \draw[darkblue, ->, thick] (mult.east) -- (add.west);
+\end{tikzpicture}

@@ -12,8 +12,6 @@
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "lstinline")
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "path")
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "url")
-   (TeX-add-symbols
-    "arraystretch")
    (LaTeX-add-labels
     "fig:single"
     "fig:fp"

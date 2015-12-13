@@ -16,54 +16,7 @@ name of a series of microprocessors designed by IBM.
 
 \begin{figure}[htbp]
   \centering
-  \begin{tikzpicture}[
-    block/.style={
-      draw=darkblue,
-      fill=cadet,
-      shape=rectangle,
-      rounded corners=1mm,
-      text height=1.5ex,
-      text depth=.25ex,
-    },
-    l1/.style={
-      minimum height=8mm,
-      minimum width=4cm,
-    },
-    ops/.style={
-      minimum height=8mm,
-      minimum width=4cm,
-      align=right,
-    },
-    inst/.style={
-      minimum height=28mm,
-      minimum width=16mm,
-    },
-    line/.style={
-      thick,
-      draw=darkblue,
-    }]
-    \node[block, l1] (L1inst) {L1 Instruction Cache};
-    \node[block, l1, right=15mm of L1inst] (L1data) {L1 Data Cache};
-    \node[block, l1, above=8mm of L1inst, fill=salmon] (Rest) {RAM, disk, network};
-    \node[block, l1, above=8mm of L1data, fill=salmon] (L2) {L2 cache};
-    \node[block, ops, below=16mm of L1data.east, anchor=east] (LS) {Load and store};
-    \node[block, ops, below=10mm of LS.east, anchor=east] (Int) {Integer};
-    \node[block, ops, below=10mm of Int.east, anchor=east] (Float) {Floating point};
-    \node[block, inst, below=26mm of L1inst.east, anchor=east] (Decode) {Decode};
-    \node[block, inst, below=26mm of L1inst.west, anchor=west] (Branch) {Branch};
-    \node[block, inst, below=2mm of Decode, minimum height=8mm] (Clock) {Clock};
-
-    \draw[line, <->] (Rest.east) -- (L2.west);
-    \draw[line, <->] (L1inst.east) -- (L1data.west);
-    \draw[line, <->] (L1data.south) -- (LS.north);
-    \draw[line, ->] (Decode.east) -- (Int.west);
-    \draw[line, ->] ([yshift=10mm]Decode.east) -- (LS.west);
-    \draw[line, ->] ([yshift=-10mm]Decode.east) -- (Float.west);
-    \draw[line, ->] (Decode.west) -- (Branch.east);
-    \draw[line, ->] ([xshift=12mm]L1inst.south) -- (Decode.north);
-    \draw[line, <-] ([xshift=-12mm]L1inst.south) -- (Branch.north);
-    \draw[line] ($(L1inst.east)!0.5!(L1data.west)$) -- ($(Rest.east)!0.5!(L2.west)$);
-  \end{tikzpicture}
+  \input{\figs/single-proc}
   \caption{
     A prototypical processor, including the MIPS R14000 used in \emph{Gridur},
     the supercomputer at NTNU during the period 2001--2007. The red components
@@ -175,26 +128,7 @@ memory access speed), the memory is organized in a hierarchical fashion;
 see \autoref{fig:MemoryHierarchy}.
 \begin{figure}
   \centering
-  \begin{tikzpicture}[
-    line/.style={
-      thick,
-      draw=darkblue,
-    }]
-    \coordinate (A) at (-4.5,0) {};
-    \coordinate (B) at (4.5,0) {};
-    \coordinate (C) at (0,7.4) {};
-    \fill[cadet] (A) -- (B) -- (C);
-    \draw[line, name path=AC] (A) -- (C);
-    \draw[line, name path=BC] (B) -- (C);
-    \foreach \y/\A in
-    {0/Tape, 1/Distributed memory, 2/Local disk, 3/Main memory (RAM), 4/Cache, 5/Registers, 6/CPU}
-    {
-      \path[name path=horiz] (A|-0,\y) -- (B|-0,\y);
-      \draw[line, name intersections={of=AC and horiz,by=P},
-      name intersections={of=BC and horiz,by=Q}] (P) -- (Q)
-      node[midway, above=1mm, text height=1.5ex, text depth=.25ex] {\A};
-    }
-  \end{tikzpicture}
+  \input{\figs/memory-hierarchy}
   \caption{
     The memory hierarchy of a computer system. Higher entries are faster, while
     lower entries are cheaper and larger.
@@ -214,18 +148,7 @@ discuss in more detail how it is decided what should be in the L1 and L2 cache.
     clock cycles.
   }
   \label{tbl:cycles}
-  \bgroup\def\arraystretch{1.2}
-  \begin{tabular}{rl}
-    \hline
-    Memory type & Clock cycles \\ \hhline{==}
-    Registers & $1$ \\ \hline
-    L1 cache & $2$--$3$ \\ \hline
-    L2 cache & $10$--$12$ \\ \hline
-    Main memory &  $100$--$200$ \\ \hline
-    Message passing & $\mathcal{O}(10^3)$--$\mathcal{O}(10^4)$ \\ \hline
-    Local disk & $\mathcal{O}(10^6)$ \\ \hline
-  \end{tabular}
-  \egroup
+  \input{\data/memory-times}
 \end{table}
 
 We remark that message passing in \autoref{tbl:cycles} refers to communication
@@ -340,25 +263,7 @@ cycle. We assume here that the pipelining feature is exploited.
 
 \begin{figure}[htbp]
   \centering
-  % \begin{center}
-  %   \includegraphics[scale=0.9]{SuperScalar}
-  % \end{center}
-  \begin{tikzpicture}[
-    block/.style={
-      draw=darkblue,
-      fill=cadet,
-      shape=rectangle,
-      rounded corners=1mm,
-      minimum height=12mm,
-      minimum width=12mm,
-    },
-    pinin/.style={pin edge={to-, thick, darkblue}},
-    pinout/.style={pin edge={-to, thick, darkblue}},
-    ]
-    \node[block, pin={[pinin]above:$\gamma$}, pin={[pinin]left:$b(i)$}] (mult) {$\times$};
-    \node[block, right=20mm of mult, pin={[pinin]above:$a(i)$}, pin={[pinout]right:$c(i)$}] (add) {$+$};
-    \draw[darkblue, ->, thick] (mult.east) -- (add.west);
-  \end{tikzpicture}
+  \input{\figs/superscalar}
   \caption{The superscalar operation multiply and add.}
   \label{fig:SuperScalar}
 \end{figure}
@@ -428,38 +333,7 @@ memory addresses map to the same cache address.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}[scale=0.3]
-    \def \n {7};
-    \def \k {3};
-    \def \q {1};
-    \def \s {3};
-
-    \foreach \i [
-      evaluate=\i as \R using -(\n+1)*\i,
-      evaluate=\i as \L using -(\n+1)*(\i+1),
-    ] in {0,...,\k}
-    {
-      \fill[cadet] (\R-\q, 0) -- (\R-\q, -2) -- (\R-\q-1, -2) -- (\R-\q-1, 0) -- (\R-\q, 0);
-      \fill[salmon] (\R-\s, 0) -- (\R-\s, -2) -- (\R-\s-1, -2) -- (\R-\s-1, 0) -- (\R-\s, 0);
-      \draw[darkblue, very thick] (\R, 0) -- (\R, -2) -- (\L, -2) -- (\L, 0) -- (\R, 0);
-      \foreach \j [
-        evaluate=\j as \l using \R-\j
-      ] in {1,...,\n}
-      {
-        \draw[darkblue, very thin] (\l, 0) -- (\l, -2);
-      }
-    }
-
-    \fill[cadet] (-\q, 3) -- (-\q, 1) -- (-\q-1, 1) -- (-\q-1, 3) -- (-\q, 3);
-    \fill[salmon] (-\s, 3) -- (-\s, 1) -- (-\s-1, 1) -- (-\s-1, 3) -- (-\s, 3);
-    \draw[darkblue, very thick] (0, 3) -- (0, 1) -- (-\n-1, 1) -- (-\n-1, 3) -- (0, 3);
-    \foreach \j in {1,...,\n} {
-      \draw[darkblue, very thin] (0-\j, 3) -- (0-\j, 1);
-    }
-
-    \node[anchor=west] at (0, -1) {RAM};
-    \node[anchor=west] at (0, 2) {Cache};
-  \end{tikzpicture}
+  \input{\figs/direct-mapped-cache}
   \caption{
     A direct mapped cache. Each main memory address maps to a unique and
     pre-determined location in the cache.
@@ -499,39 +373,7 @@ be observed in this case. This situation is refered to as cache trashing; see
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}[scale=0.3]
-    \def \n {7};
-    \def \k {3};
-    \def \q {1};
-
-    \foreach \i [
-      evaluate=\i as \R using -(\n+1)*\i,
-      evaluate=\i as \L using -(\n+1)*(\i+1),
-    ] in {0,...,\k}
-    {
-      \fill[cadet] (\R-\q, 0) -- (\R-\q, -2) -- (\R-\q-1, -2) -- (\R-\q-1, 0) -- (\R-\q, 0);
-      \draw[darkblue, very thick] (\R, 0) -- (\R, -2) -- (\L, -2) -- (\L, 0) -- (\R, 0);
-      \foreach \j [
-        evaluate=\j as \l using \R-\j
-      ] in {1,...,\n}
-      {
-        \draw[darkblue, very thin] (\l, 0) -- (\l, -2);
-      }
-    }
-
-    \fill[cadet] (-\q, 3) -- (-\q, 1) -- (-\q-1, 1) -- (-\q-1, 3) -- (-\q, 3);
-    \draw[darkblue, very thick] (0, 3) -- (0, 1) -- (-\n-1, 1) -- (-\n-1, 3) -- (0, 3);
-    \foreach \j in {1,...,\n} {
-      \draw[darkblue, very thin] (0-\j, 3) -- (0-\j, 1);
-    }
-
-    \node[anchor=west] at (0, -1) {RAM};
-    \node[anchor=west] at (0, 2) {Cache};
-    \node[anchor=north] at (-\q-0.5, -2) {\scriptsize $a(i)$};
-    \node[anchor=north] at (-\n-1-\q-0.5, -2) {\scriptsize $b(i)$};
-    \node[anchor=north] at (-\n-\n-2-\q-0.5, -2) {\scriptsize $c(i)$};
-    \node[anchor=south] at (-\q-0.5, 3) {\scriptsize ??};
-  \end{tikzpicture}
+  \input{\figs/cache-trashing}
   \caption{
     Cache trashing. The corresponding elements in the vectors $\bm a$, $\bm b$
     and $\bm c$ all map to the same cache address.
@@ -547,31 +389,7 @@ degradation is possible to observe due to undesirable memory traffic.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}[
-    scale=0.8,
-    every node/.style={
-      text height=1.5ex,
-      text depth=.25ex,
-    }
-    ]
-    \draw[darkblue, very thick] (-6, 0) -- (6, 0);
-    \draw[darkblue, very thick] (-6, 1) -- (6, 1);
-    \draw[darkblue, very thin] (-3, 0) -- (-3, 1);
-    \draw[darkblue, very thin] (-2, 0) -- (-2, 1);
-    \draw[darkblue, very thin] (-1, 0) -- (-1, 1);
-    \draw[darkblue, very thin] (0, 0) -- (0, 1);
-    \draw[darkblue, very thin] (1, 0) -- (1, 1);
-    \draw[darkblue, very thin] (2, 0) -- (2, 1);
-    \draw[darkblue, very thin] (3, 0) -- (3, 1);
-    \node at (-3.5, 0.5) {\footnotesize $\cdots$};
-    \node at (-2.5, 0.5) {\footnotesize $a_i$};
-    \node at (-1.5, 0.5) {\footnotesize $b_i$};
-    \node at (-0.5, 0.5) {\footnotesize $c_i$};
-    \node at (0.5, 0.5) {\footnotesize $a_{i+1}$};
-    \node at (1.5, 0.5) {\footnotesize $b_{i+1}$};
-    \node at (2.5, 0.5) {\footnotesize $c_{i+1}$};
-    \node at (3.5, 0.5) {\footnotesize $\cdots$};
-  \end{tikzpicture}
+  \input{\figs/adjacent-memory}
   \caption{Adjacent memory layout.}
   \label{fig:AdjacentMemory}
 \end{figure}

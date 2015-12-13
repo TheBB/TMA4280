@@ -1,0 +1,48 @@
+\begin{tikzpicture}[
+  block/.style={
+    draw=darkblue,
+    fill=cadet,
+    shape=rectangle,
+    rounded corners=1mm,
+    text height=1.5ex,
+    text depth=.25ex,
+  },
+  l1/.style={
+    minimum height=8mm,
+    minimum width=4cm,
+  },
+  ops/.style={
+    minimum height=8mm,
+    minimum width=4cm,
+    align=right,
+  },
+  inst/.style={
+    minimum height=28mm,
+    minimum width=16mm,
+  },
+  line/.style={
+    thick,
+    draw=darkblue,
+  }]
+  \node[block, l1] (L1inst) {L1 Instruction Cache};
+  \node[block, l1, right=15mm of L1inst] (L1data) {L1 Data Cache};
+  \node[block, l1, above=8mm of L1inst, fill=salmon] (Rest) {RAM, disk, network};
+  \node[block, l1, above=8mm of L1data, fill=salmon] (L2) {L2 cache};
+  \node[block, ops, below=16mm of L1data.east, anchor=east] (LS) {Load and store};
+  \node[block, ops, below=10mm of LS.east, anchor=east] (Int) {Integer};
+  \node[block, ops, below=10mm of Int.east, anchor=east] (Float) {Floating point};
+  \node[block, inst, below=26mm of L1inst.east, anchor=east] (Decode) {Decode};
+  \node[block, inst, below=26mm of L1inst.west, anchor=west] (Branch) {Branch};
+  \node[block, inst, below=2mm of Decode, minimum height=8mm] (Clock) {Clock};
+
+  \draw[line, <->] (Rest.east) -- (L2.west);
+  \draw[line, <->] (L1inst.east) -- (L1data.west);
+  \draw[line, <->] (L1data.south) -- (LS.north);
+  \draw[line, ->] (Decode.east) -- (Int.west);
+  \draw[line, ->] ([yshift=10mm]Decode.east) -- (LS.west);
+  \draw[line, ->] ([yshift=-10mm]Decode.east) -- (Float.west);
+  \draw[line, ->] (Decode.west) -- (Branch.east);
+  \draw[line, ->] ([xshift=12mm]L1inst.south) -- (Decode.north);
+  \draw[line, <-] ([xshift=-12mm]L1inst.south) -- (Branch.north);
+  \draw[line] ($(L1inst.east)!0.5!(L1data.west)$) -- ($(Rest.east)!0.5!(L2.west)$);
+\end{tikzpicture}

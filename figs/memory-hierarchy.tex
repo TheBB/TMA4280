@@ -1,0 +1,20 @@
+\begin{tikzpicture}[
+  line/.style={
+    thick,
+    draw=darkblue,
+  }]
+  \coordinate (A) at (-4.5,0) {};
+  \coordinate (B) at (4.5,0) {};
+  \coordinate (C) at (0,7.4) {};
+  \fill[cadet] (A) -- (B) -- (C);
+  \draw[line, name path=AC] (A) -- (C);
+  \draw[line, name path=BC] (B) -- (C);
+  \foreach \y/\A in
+  {0/Tape, 1/Distributed memory, 2/Local disk, 3/Main memory (RAM), 4/Cache, 5/Registers, 6/CPU}
+  {
+    \path[name path=horiz] (A|-0,\y) -- (B|-0,\y);
+    \draw[line, name intersections={of=AC and horiz,by=P},
+    name intersections={of=BC and horiz,by=Q}] (P) -- (Q)
+    node[midway, above=1mm, text height=1.5ex, text depth=.25ex] {\A};
+  }
+\end{tikzpicture}
