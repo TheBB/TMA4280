@@ -1,0 +1,22 @@
+\begin{tikzpicture}[
+  scale=0.5,
+  block/.style={
+    minimum height=2,
+    minimum width=2,
+    shape=rectangle,
+    fill=cadet,
+    draw=darkblue,
+    rounded corners=1mm,
+    text centered,
+    thick,
+  }
+  ]
+  \foreach \i in {4.5, 7.5, 10.5, 13.5} {
+    \node[block, anchor=north] at (\i,-1) {SMP};
+    \draw[very thick, darkblue] (\i,0) -- (\i,-1);
+  }
+  \draw[red, very thick, <->] (0,0) -- (18,0);
+  \node[anchor=south] at (9,0) {Interconnect};
+  \node[anchor=north] at (16.5,-1.2) {$\cdots$};
+  \node[anchor=north] at (1.5,-1.2) {$\cdots$};
+\end{tikzpicture}

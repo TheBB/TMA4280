@@ -1,0 +1,11 @@
+\begin{tikzpicture}
+  \foreach \i in {0,...,3} {
+    \draw[very thick, red] (\i,0) -- (\i,3);
+    \draw[very thick, red] (0,\i) -- (3,\i);
+  }
+  \foreach \i in {0,...,3} {
+    \foreach \j in {0,...,3} {
+      \draw[thick, darkblue, fill=cadet] (\i,\j) circle (0.1);
+    }
+  }
+\end{tikzpicture}

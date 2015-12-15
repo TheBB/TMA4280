@@ -1,0 +1,168 @@
+\input{preamble}
+
+\title{Multiprocessor systems}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Supercomputers at NTNU}
+  \begin{center}
+    \scalebox{0.8}{
+      \input{\data/history}
+    }
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Supercomputers}
+  \begin{itemize}
+  \item 70's--80's: vector processors; \\
+    one or a few expensive, custom-made chips.
+  \item 80's--: MPP systems; \\
+    many processors; standard micro-processors.
+  \item Current trend: multicore systems; \\
+    heterogeneous computing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multi-processor systems}
+  Challenges:
+  \begin{itemize}
+  \item communication between processors \\
+    (memory access, programming models);
+  \item computational methods or algorithms;
+  \item scalability (hardware and algorithms);
+  \item large volumes of data (storage and visualization).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared memory access}
+  \begin{center}
+    \input{\figs/global-memory-access}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distributed memory access}
+  \begin{center}
+    \input{\figs/distributed-memory-access}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared memory: uniform access}
+  This is called a \emph{symmetric multi-processor}. Examples: bus-based,
+  switch-based and crossbar organizations. Challenges: cache coherency and cost.
+  \begin{center}
+    \scalebox{0.6}{\input{\figs/crossbar}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared memory: non-uniform access}
+  This is called NUMA or ccNUMA (\emph{cache-coherent non-uniform memory
+    access}). Example: Several SMPs connected with a high-speed low-latency
+  network. Each SMP has uniform memory access internally.
+  \begin{center}
+    \input{\figs/ccnuma}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distributed memory systems}
+  Only the local address space is available to each processor. Data from other
+  processors are only available through explicit message-passing.
+  \begin{center}
+    \input{\figs/distributed-memory-computer}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Network topology}
+  Examples: 2D mesh or toroid. Vilje is an eight-dimensional hyper-cube (!).
+  \begin{center}
+    \input{\figs/mesh}
+    \qquad
+    \input{\figs/toroid}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The current supercomputer at NTNU}
+  Based on the Intel Sandy Bridge microprocessor, an octa-core chip (image
+  shows the quad-core version)
+  \begin{center}
+    \includegraphics[width=9.5cm]{sandy}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The current supercomputer at NTNU}
+  Intel Sandy bridge E5-2670:
+  \begin{itemize}
+  \item An octa-core chip (8 physical processing cores)
+  \item Caches and memory:
+    \begin{itemize}
+    \item private L1 cache (32kB instruction+32kB data) 3 clocks;
+    \item private L2 cache (256kB) 8 clocks;
+    \item shared L3 cache (20MB) $\sim$ 30 clocks (could not find info);
+    \item main memory (32GB) $\sim$ 150 clocks (could not find info).
+    \end{itemize}
+  \item FMA capable AVX unit, meaning 8 Flop per cycle, SSE 4.x.
+  \item Simultaneous multi-threading (SMT): Intel calls this ``hyperthreading'':
+    each processor core can handle two instruction streams at the same time.
+    Problem: Shared SIMD units.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A node: two E5-2670 chips}
+  \begin{center}
+    \begin{tikzpicture}[
+      proc/.style={
+        inner sep=2mm,
+        shape=rectangle,
+        rounded corners=1mm,
+        draw=darkblue,
+        fill=cadet,
+        thick,
+      }]
+      \node[proc] (p1) at (0,0) {E5-2670};
+      \node[proc] (p2) at (3,0) {E5-2670};
+      \node[proc] (ict) at (1.5,2) {Interconnect};
+      \node[proc] (mem) at (1.5,4) {Memory};
+      \node (nodes) at (5,2) {Other nodes};
+      \draw[<->, thick, darkblue] (p1) edge[bend left] (ict);
+      \draw[<->, thick, darkblue] (p2) edge[bend right] (ict);
+      \draw[<->, thick, darkblue] (ict) -- (mem);
+      \draw[->, thick, darkblue] (ict) -- (nodes);
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key data}
+
+  Vilje:
+  \begin{itemize}
+  \item 1440 nodes or 23040 physical cores;
+  \item 16-core shared memory within a single node;
+  \item distributed memory across nodes;
+  \item 394 TB storage.
+  \item 8.6GB/s aggregated bandwidth.
+  \end{itemize}
+
+  Programming models:
+  \begin{itemize}
+  \item shared memory programming model (OpenMP) within a node;
+  \item message passing (MPI) across nodes;
+  \item also possible: message passing within a single node;
+  \item also possible: both models within the same program.
+  \end{itemize}
+\end{frame}
+
+\input{postamble}

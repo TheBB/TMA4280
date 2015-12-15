@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+  \foreach \i in {0,...,3} {
+    \draw[very thick, red] (\i,0) -- (\i,3);
+    \draw[very thick, red] (0,\i) -- (3,\i);
+  }
+  \foreach \i in {0,...,3} {
+    \draw[thick, red] (\i,0) arc (180:360:0.15);
+    \draw[thick, red] (\i+0.3,3) arc (0:180:0.15);
+    \draw[thick, red] (0,\i) arc (90:270:0.15);
+    \draw[thick, red] (3,\i-0.3) arc (270:450:0.15);
+  }
+  \foreach \i in {0,...,2} {
+    \draw[thick, red, densely dashed] (\i+0.3,0) -- (\i+0.3,3);
+    \draw[thick, red, densely dashed] (0,\i+0.7) -- (3,\i+0.7);
+  }
+  \draw[thick, red] (3.3,0) -- (3.3,3);
+  \draw[thick, red] (0,-0.3) -- (3,-0.3);
+  \foreach \i in {0,...,3} {
+    \foreach \j in {0,...,3} {
+      \draw[thick, darkblue, fill=cadet] (\i,\j) circle (0.1);
+    }
+  }
+\end{tikzpicture}

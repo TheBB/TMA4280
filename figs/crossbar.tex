@@ -1,0 +1,24 @@
+\begin{tikzpicture}[scale=0.5]
+  \foreach \i in {0,3,6,9}
+  {
+    \draw[red, very thick] (0,\i) -- (11,\i);
+    \draw[red, very thick] (\i,0) -- (\i,11);
+
+    \draw[darkblue, fill=cadet, thick] (11,\i+.75) rectangle (13,\i-.75);
+    \node at (12,\i) {M};
+  }
+
+  \foreach \i in {0,3}
+  {
+    \draw[darkblue, fill=cadet, thick] (\i-1,14) rectangle (\i+1,11);
+    \draw[darkblue, very thin, dashed] (\i-1,12.5) -- (\i+1,12.5);
+    \node at (\i,13.25) {P};
+    \node at (\i,11.75) {\$};
+  }
+
+  \foreach \i in {6,9}
+  {
+    \draw[darkblue, fill=cadet, thick] (\i-1,12.5) rectangle (\i+1,11);
+    \node at (\i,11.75) {I/O};
+  }
+\end{tikzpicture}
