@@ -1,0 +1,65 @@
+\input{preamble}
+
+\title{Message passing and MPI}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{The message passing model}
+  \begin{center}
+    \input{\figs/message-passing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{MPI with C}
+  \scalebox{0.5}{
+    \lstinputlisting[style=c]{\code/mpi_hello/c/hello.c}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{MPI with Fortran}
+  \scalebox{0.5}{
+    \lstinputlisting[style=fortran]{\code/mpi_hello/fortran/hello.f90}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Sample output with four processors}
+  \begin{center}
+    \begin{tabular}{c}
+\begin{lstlisting}
+Process 0: Hello, world!
+Process 1: Hello, world!
+Process 3: Hello, world!
+Process 2: Hello, world!
+\end{lstlisting}
+    \end{tabular}
+  \end{center}
+  Note that ordering is not guaranteed.
+\end{frame}
+
+\begin{frame}
+  \frametitle{MPI: Message Passing Interface}
+  Advantages of the MPI message-passing model:
+  \begin{itemize}
+  \item standardization;
+  \item portability;
+  \item performance;
+  \item expressiveness.
+  \end{itemize}
+
+  MPI is a library comprising about 125 functions or operations:
+  \begin{itemize}
+  \item \textcolor{red}{one-to-one} operations (or point-to-point communication);
+  \item \textcolor{red}{one-to-all} operations;
+  \item \textcolor{red}{all-to-one} operations;
+  \item \textcolor{red}{all-to-all} operations.
+  \end{itemize}
+  The last three types are referred to as {\em collective} operations.
+\end{frame}
+
+\input{postamble}

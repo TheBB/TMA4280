@@ -1,0 +1,21 @@
+\begin{tikzpicture}[
+  proc/.style={shape=circle, draw=darkblue, fill=cadet, thick},
+  msg/.style={shape=rectangle, draw=darkblue, fill=cadet, thick, rounded corners=0.5mm},
+  env/.style={minimum height=1.7cm, minimum width=1.7cm},
+  scale=0.7,
+  ]
+  \node[proc] (p0) at (0,0) {$P_0$};
+  \node[proc] (p1) at (1,3) {$P_1$};
+  \node[proc] (p2) at (3,-0.6) {$P_2$};
+  \node[proc] (p3) at (6,3.6) {$P_3$};
+  \node[msg] (msg) at (4.0, 1.5) {\scriptsize Message};
+  \node[msg, env, fill=cadet!55] (env) at (8, -2.0) {};
+  \node[msg, very thin] (body) at (8, -1.7) {\scriptsize Body};
+  \node[below of=body, node distance=6mm] {\scriptsize Envelope};
+  \draw[->, thick] (p2) edge[bend right] node [right] {} (msg);
+  \draw[->, thick] (msg) edge[bend right] node [right] {} (p1);
+  \draw[->, thick] (env) edge[bend right] node [right] {} (msg);
+
+  \node[msg] (smp) at (-2,-2) {\scriptsize SMP};
+  \draw[->, thick] (smp) edge[bend left] node [right] {} (p0);
+\end{tikzpicture}
