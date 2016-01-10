@@ -391,4 +391,283 @@ MPI_Barrier(comm);
   \frametitle{Scalability: timing results on Vilje}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Inner product}
+  \begin{align*}
+    \sigma = \bm x^\intercal \bm y = \bm x \cdot \bm y = \sum_{m=0}^{M-1} x_m y_m
+  \end{align*}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      \foreach \i in {0,...,9} {
+        \node at (\i+0.5,2.5) {$x_\i$};
+        \node at (\i+0.5,0.5) {$y_\i$};
+        \draw[darkblue, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, thick] (\i,2) rectangle (\i+1,3);
+      }
+      \node at (-0.5,0.5) {$\bm y$};
+      \node at (-0.5,2.5) {$\bm y$};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distribution of work}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {0,...,2} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {3,...,9} {
+        \draw[darkblue, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,...,9} {
+        \node at (\i+0.5,2.0) {${\scriptstyle x_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle y_\i}$};
+      }
+      \node[anchor=west] at (10.5,1.25) {$\omega_0 = \sum_{m=0}^2 x_m y_m$};
+    \end{tikzpicture}
+    \\~\\
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {3,4,5} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,1,2,6,7,8,9} {
+        \draw[darkblue, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,...,9} {
+        \node at (\i+0.5,2.0) {${\scriptstyle x_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle y_\i}$};
+      }
+      \node[anchor=west] at (10.5,1.25) {$\omega_1 = \sum_{m=3}^5 x_m y_m$};
+    \end{tikzpicture}
+    \\~\\
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {6,7} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,1,2,3,4,5,8,9} {
+        \draw[darkblue, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,...,9} {
+        \node at (\i+0.5,2.0) {${\scriptstyle x_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle y_\i}$};
+      }
+      \node[anchor=west] at (10.5,1.25) {$\omega_2 = \sum_{m=6}^7 x_m y_m$};
+    \end{tikzpicture}
+    \\~\\
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {8,9} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,...,7} {
+        \draw[darkblue, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, thick] (\i,1.5) rectangle (\i+1,2.5);
+      }
+      \foreach \i in {0,...,9} {
+        \node at (\i+0.5,2.0) {${\scriptstyle x_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle y_\i}$};
+      }
+      \node[anchor=west] at (10.5,1.25) {$\omega_3 = \sum_{m=8}^9 x_m y_m$};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Program on processor $p$}
+  \begin{align*}
+    \bm x, \bm y &: \text{ vectors of dimension } M \\
+    \omega_p &= \sum_{m \in \mathcal{M}_p} x_m y_m \\
+                 & \text{Send } \omega_p  \text{ to processor } q \not= p \\
+                 & \text{Receive } \omega_q  \text{ from processor } q \\
+    \sigma &= \sum_{q=0}^{P-1} \omega_q.
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Local and global numbering}
+  Global indices: $\mathcal{M} = \{0,1,2,\ldots,M-1\}$.
+  Cardinality $|\mathcal{M}| = M$.
+
+  Subdivision:
+  \begin{align*}
+    \mathcal{M} = \bigcup_{p=0}^{P-1} \mathcal{M}_p, \qquad
+    \mathcal{M}_p \cap \mathcal{M}_q = \emptyset, \qquad
+    p \not= q.
+  \end{align*}
+
+  \begin{itemize}
+  \item $\mathcal{M}_p$: a subset of global indices
+  \item $M_p = |\mathcal{M}_p|$: the number of global indices assigned to
+    process $p$.
+  \item $\mathcal{I}_p = \{0,1,\ldots,M_p-1\}$: a \emph{local} index set
+  \end{itemize}
+
+  Note $|\mathcal{I}_p| = |\mathcal{M}_p| = M_p$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Local and global numbering}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[circle, thick, fill=cadet, draw=darkblue, minimum size=1cm] (g) at (-3,0) {$m$};
+      \node[circle, thick, fill=cadet, draw=darkblue, minimum size=1cm] (l) at (3,0) {$p,i$};
+      \draw[->, draw=darkblue, thick] (g) edge[bend left] node [above] {$\mu$} (l);
+      \draw[->, draw=darkblue, thick] (l) edge[bend left] node [below] {$\mu^{-1}$} (g);
+      \node at (-3,-1) {$m\in\mathcal{M}$};
+      \node (p) at (3,-1) {$0 \leq p < P$};
+      \node[anchor=north] at (p.south) {$i \in \mathcal{I}_p$};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distribution of work and data}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {0,1,2} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+        \node at (\i+0.5,2.0) {${\scriptstyle \hat{x}_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle \hat{y}_\i}$};
+      }
+      \node[anchor=west] at (4.5,1.25) {$\omega_0 = \sum_{i=0}^2 \hat{x}_i \hat{y}_i$};
+    \end{tikzpicture}
+    \\~\\
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {0,1,2} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+        \node at (\i+0.5,2.0) {${\scriptstyle \hat{x}_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle \hat{y}_\i}$};
+      }
+      \node[anchor=west] at (4.5,1.25) {$\omega_1 = \sum_{i=0}^2 \hat{x}_i \hat{y}_i$};
+    \end{tikzpicture}
+    \\~\\
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {0,1} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+        \node at (\i+0.5,2.0) {${\scriptstyle \hat{x}_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle \hat{y}_\i}$};
+      }
+      \node[anchor=west] at (4.5,1.25) {$\omega_2 = \sum_{i=0}^1 \hat{x}_i \hat{y}_i$};
+    \end{tikzpicture}
+    \\~\\
+    \begin{tikzpicture}[scale=0.45]
+      \foreach \i in {0,1} {
+        \draw[darkblue, fill=cadet, thick] (\i,0) rectangle (\i+1,1);
+        \draw[darkblue, fill=cadet, thick] (\i,1.5) rectangle (\i+1,2.5);
+        \node at (\i+0.5,2.0) {${\scriptstyle \hat{x}_\i}$};
+        \node at (\i+0.5,0.5) {${\scriptstyle \hat{y}_\i}$};
+      }
+      \node[anchor=west] at (4.5,1.25) {$\omega_3 = \sum_{i=0}^1 \hat{x}_i \hat{y}_i$};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Program on processor $p$}
+  \begin{align*}
+    \hat{\bm x}, \hat{\bm y} &: \text{ vectors of dimension } I_p \\
+    \omega_p &= \sum_{i=0}^{I_p-1} \hat{x}_i \hat{y}_i
+    = \sum_{i=0}^{I_p-1} x_{\mu^{-1}(p,i)} y_{\mu^{-1}(p,i)}
+    = \sum_{m \in \mathcal{M}_p} x_m y_m. \\
+                 & \text{Send } \omega_p  \text{ to processor } q \not= p \\
+                 & \text{Receive } \omega_q  \text{ from processor } q \\
+    \sigma &= \sum_{q=0}^{P-1} \omega_q.
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Global reduction}
+  Reduction algorithm for the global sum
+  \[
+    \sigma = \sum_{q=0}^{P-1} \omega_q.
+  \]
+  \texttt{\textcolor{red}{MPI\_Reduce}(}$\omega$, $\sigma$,
+  \texttt{1, MPI\_DOUBLE, MPI\_SUM, 0, MPI\_COMM\_WORLD)} \\
+  (the answer will be known to process zero), or \\~\\
+  \texttt{\textcolor{red}{MPI\_Allreduce}(}$\omega$, $\sigma$,
+  \texttt{1, MPI\_DOUBLE, MPI\_SUM, MPI\_COMM\_WORLD)}
+  (the answer will be known to every process)
+\end{frame}
+
+\begin{frame}
+  \frametitle{Global sum $P=4$, \texttt{MPI\_Reduce}}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      \node (a0) at (0,3) {$p=0: \quad \omega_0$};
+      \node (a1) at (0,2) {$p=1: \quad \omega_1$};
+      \node (a2) at (0,1) {$p=2: \quad \omega_2$};
+      \node (a3) at (0,0) {$p=3: \quad \omega_3$};
+
+      \node[right=1 of a0] (b0) {$\omega_0 + \omega_1$};
+      \node[right=1 of a2] (b2) {$\omega_2 + \omega_3$};
+
+      \node[right=1 of b0] (c0) {$\omega_0 + \omega_1 + \omega_2 + \omega_3 = \sigma$};
+
+      \draw[thick, darkblue, ->] (a1.east) -- (b0.west);
+      \draw[thick, darkblue, ->] (a3.east) -- (b2.west);
+      \draw[thick, darkblue, ->] (b2.east) -- (c0.west);
+    \end{tikzpicture}
+  \end{center}
+  Can be completed in $\log_2 P$ steps.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Global sum $P=4$, \texttt{MPI\_Allreduce}}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      \node (a0) at (0,3) {$p=0: \quad \omega_0$};
+      \node (a1) at (0,2) {$p=1: \quad \omega_1$};
+      \node (a2) at (0,1) {$p=2: \quad \omega_2$};
+      \node (a3) at (0,0) {$p=3: \quad \omega_3$};
+
+      \node[right=1 of a0] (b0) {$\omega_0 + \omega_1$};
+      \node[right=1 of a1] (b1) {$\omega_1 + \omega_0$};
+      \node[right=1 of a2] (b2) {$\omega_2 + \omega_3$};
+      \node[right=1 of a3] (b3) {$\omega_3 + \omega_2$};
+
+      \node[right=1 of b0] (c0) {$\omega_0 + \omega_1 + \omega_2 + \omega_3 = \sigma$};
+      \node[right=1 of b1] (c1) {$\omega_1 + \omega_0 + \omega_3 + \omega_2 = \sigma$};
+      \node[right=1 of b2] (c2) {$\omega_2 + \omega_3 + \omega_0 + \omega_1 = \sigma$};
+      \node[right=1 of b3] (c3) {$\omega_3 + \omega_2 + \omega_1 + \omega_0 = \sigma$};
+
+      \draw[thick, darkblue, ->] (a0.east) -- (b1.west);
+      \draw[thick, darkblue, ->] (a1.east) -- (b0.west);
+      \draw[thick, darkblue, ->] (a2.east) -- (b3.west);
+      \draw[thick, darkblue, ->] (a3.east) -- (b2.west);
+      \draw[thick, darkblue, ->] (b0.east) -- (c2.west);
+      \draw[thick, darkblue, ->] (b1.east) -- (c3.west);
+      \draw[thick, darkblue, ->] (b2.east) -- (c0.west);
+      \draw[thick, darkblue, ->] (b3.east) -- (c1.west);
+    \end{tikzpicture}
+  \end{center}
+  Can be completed in $\log_2 P$ steps.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Program on processor $p$}
+  \begin{align*}
+    \hat{\bm x}, \hat{\bm y} &: \text{ vectors of dimension } I_p \\
+    \sigma &= \sum_{i=0}^{I_p-1} \hat{x}_i \hat{y}_i
+             = \sum_{i=0}^{I_p-1} x_{\mu^{-1}(p,i)} y_{\mu^{-1}(p,i)}
+             = \sum_{m \in \mathcal{M}_p} x_m y_m. \\
+                             & \text{for } d=0,\ldots,\log_2 P - 1 \\
+    & \quad \text{Send } \sigma \text{ to processor } q = p \;\overline{\vee}\; 2^d \\
+    & \quad \text{Receive } \sigma_q \text{ from processor } q = p \;\overline{\vee}\; 2^d \\
+    & \quad \sigma = \sigma + \sigma_q \\
+    & \text{end}
+  \end{align*}
+  Here, $\overline{\vee}$ is exclusive or. $p$ and $p\;\overline{\vee}\;2^d$
+  differ only in bit $d$.
+\end{frame}
+
 \input{postamble}
