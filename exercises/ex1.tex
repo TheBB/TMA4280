@@ -1,0 +1,67 @@
+\documentclass[onecolumn, oneside, a4paper, 11pt]{memoir}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Paths
+\newcommand{\figs}{../figs}
+\newcommand{\data}{../data}
+
+% Fonts
+\usepackage{newpxtext,newpxmath}
+\renewcommand*\sfdefault{cmss}
+
+% Math
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+
+\newtheorem{ex}{Exercise}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{center}
+  {\Huge \bfseries \scshape
+    Introduction to \\[0.2\baselineskip] Supercomputing} \\[2\baselineskip]
+  {\Large TMA4280 $\cdot$ Problem set 1} \\[2\baselineskip]
+\end{center}
+
+\begin{ex}
+  Exercise 1.1 in the lecture notes.
+\end{ex}
+
+\begin{ex}
+  Exercise 1.2 in the lecture notes.
+\end{ex}
+
+\begin{ex}
+  Exercise 1.3 in the lecture notes.
+\end{ex}
+
+\begin{ex}
+  Exercise 1.4 in the lecture notes.
+\end{ex}
+
+\begin{ex}
+  Exercise 1.5 in the lecture notes.
+\end{ex}
+
+\begin{ex}
+  Exercise 1.6 in the lecture notes.
+\end{ex}
+
+\begin{ex}
+  Implement a C or Fortran program that calculates $\bm y = \bm A \bm x$.
+  \begin{align*}
+    \bm A =
+    \begin{pmatrix}
+      0.3 & 0.4 & 0.3 \\
+      0.7 & 0.1 & 0.2 \\
+      0.5 & 0.5 & 0.0
+    \end{pmatrix}, \qquad \bm x = \begin{pmatrix} 1.0 \\ 1.0 \\ 1.0 \end{pmatrix}.
+  \end{align*}
+\end{ex}
+
+\end{document}
