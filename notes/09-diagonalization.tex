@@ -96,7 +96,7 @@ Then
 \end{align*}
 where
 \begin{align*}
-  \bm Lambda &= \operatorname{diag}(\lambda_1, \ldots, \lambda_{n-1}) =
+  \bm \Lambda &= \operatorname{diag}(\lambda_1, \ldots, \lambda_{n-1}) =
   \begin{pmatrix}
     \lambda_1 & & \\
      & \ddots & \\
@@ -130,7 +130,7 @@ follows:
   &: \; \mathcal{O}(n) ~ \text{operations} \\
   \\
   \bm T \, \bm u &= \bm g \\
-  \bm Q \, \bm \Lambda \, \bm Q^T \bm u &= \bm g \\
+  \bm Q \, \bm \Lambda \, \bm Q^\intercal \bm u &= \bm g \\
   \bm \Lambda \underbrace{\bm Q^\intercal \bm u}_{\tilde{\bm u}}
   &= \underbrace{\bm Q^\intercal \bm g}_{\tilde{\bm g}}
   & \tilde{\bm g} &: \; \mathcal{O}(n^2) ~ \text{operations} \\
@@ -139,7 +139,7 @@ follows:
   \tilde{\bm u} &= \bm \Lambda^{-1} \tilde{\bm g}
   & \tilde{\bm u} &: \; \mathcal{O}(n) ~ \text{operations} \\
   \\
-  \bm Q^T \bm u &= \tilde{\bm u} \\
+  \bm Q^\intercal \bm u &= \tilde{\bm u} \\
   \bm u &= \bm Q \tilde{\bm u} & \bm u
   &: \; \mathcal{O}(n^2) ~ \text{operations}
 \end{alignat*}
@@ -271,8 +271,8 @@ Combining \eqref{eq:T_diag} and \eqref{eq:Poisson2D_TUUT} we get
 \end{equation}
 
 Multiplying \eqref{eq:Poisson2D_T_diag} from the right with $\bm Q$ and from the
-left with $\bm Q^T$, and using the fact that $\bm Q^\intercal \bm Q = \bm I$, we
-get
+left with $\bm Q^\intercal$, and using the fact that $\bm Q^\intercal \bm Q =
+\bm I$, we get
 \begin{equation*}
   \bm \Lambda \underbrace{\bm Q^\intercal \bm U \bm Q}_{\tilde{\bm U}} +
   \underbrace{\bm Q^\intercal \bm U \bm Q}_{\tilde{\bm U}} \bm \Lambda =
