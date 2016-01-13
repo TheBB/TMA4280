@@ -56,7 +56,34 @@
 \begin{frame}
   \frametitle{Parallell I/O with MPI-IO}
   \begin{center}
-    \includegraphics[width=8cm]{serial}
+    \begin{tikzpicture}[
+      scale=0.7,
+      data/.style={
+        rectangle,
+        draw=darkblue,
+        fill=cadet,
+        rounded corners=0.8,
+      }
+      ]
+      \node[data] (d0) at (0,0) {$d_0$};
+      \node[data] (d1) at (2,0) {$d_1$};
+      \node[data] (d2) at (4,0) {$d_2$};
+      \node[data] (d3) at (6,0) {$d_3$};
+      \node[left=0.0 of d0.west] {$P_0$};
+      \node[below=0.0 of d1.south] {$P_1$};
+      \node[below=0.0 of d2.south] {$P_2$};
+      \node[below=0.0 of d3.south] {$P_3$};
+      \draw[->, darkblue, thick] (d1) edge[bend right] node [above] {} (d0);
+      \draw[->, darkblue, thick] (d2) edge[bend right] node [above] {} (d0);
+      \draw[->, darkblue, thick] (d3) edge[bend right] node [above] {} (d0);
+      \foreach \i in {0,...,3} {
+        \draw[darkblue, fill=cadet] (-0.5+\i, -3) rectangle (0.5+\i, -2);
+        \node at (\i, -2.5) {$d_\i$};
+      }
+      \draw[darkblue, thick] (-2, -3) -- (6, -3);
+      \draw[darkblue, thick] (-2, -2) -- (6, -2);
+      \draw[darkblue, thick, ->] (d0.south) -- (0,-2);
+    \end{tikzpicture}
   \end{center}
 \end{frame}
 
@@ -105,7 +132,10 @@
 \begin{frame}
   \frametitle{Poisson problem: Domain decomposition}
   \begin{center}
-    \includegraphics[width=8cm]{dd}
+    \begin{tikzpicture}[scale=2.2]
+      \draw[black, fill=red, opacity=0.5] (0,0) circle (1);
+      \draw[black, fill=blue, opacity=0.5] (0,-0.4) rectangle (2,0.5);
+    \end{tikzpicture}
   \end{center}
 \end{frame}
 
