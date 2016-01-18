@@ -11,12 +11,63 @@
 \usepackage{newpxtext,newpxmath}
 \renewcommand*\sfdefault{cmss}
 
+% Units
+\usepackage[detect-weight=true, binary-units=true]{siunitx}
+\DeclareSIUnit\flop{Flops}
+
 % Math
+\let\openbox\undefined
+\usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{bm}
 
 \newtheorem{ex}{Exercise}
+\theoremstyle{remark}
+\newtheorem*{sol}{Solution}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\graphicspath{{../figs/}}
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,arrows,calc,intersections}
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{compat=1.8}
+
+% Colors
+\definecolor{darkblue}{HTML}{00688B}
+\definecolor{darkgreen}{HTML}{6E8B3D}
+\definecolor{cadet}{HTML}{DAE1FF}
+\definecolor{salmon}{HTML}{FFB08A}
+
+% Listings
+\usepackage{textcomp}
+\usepackage{listings}
+\lstset{
+  keywordstyle=\bfseries\color{orange},
+  stringstyle=\color{darkblue!80},
+  commentstyle=\color{darkblue!80},
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  upquote=true,
+}
+\lstdefinestyle{fortran}{
+  language=Fortran,
+  morekeywords={for},
+  deletekeywords={status},
+}
+\lstdefinestyle{c}{
+  language=C,
+  morekeywords={include},
+}
+\lstdefinestyle{shell}{
+  language=bash,
+}
 
 \begin{document}
 
@@ -31,26 +82,73 @@
 \begin{ex}
   Exercise 1.1 in the lecture notes.
 \end{ex}
+\begin{sol}
+  We found that single precision numbers have about 7 significant (decimal)
+  digits, since they use a 23-bit mantissa, and $2^{-23} \approx 10^{-7}$.
+\end{sol}
 
 \begin{ex}
   Exercise 1.2 in the lecture notes.
 \end{ex}
+\begin{sol}
+  \begin{align*}
+    4.25 &= 4 + \frac{1}{4} \\
+         &= 1 \cdot 2^2 + 0 \cdot 2^1 + 0 \cdot 2^0 + 0 \cdot 2^{-1} + 1 \cdot 2^{-2} \\
+         &= 100.01_2 \\
+         &= 1.0001_2 \cdot 2^2
+  \end{align*}
+\end{sol}
 
 \begin{ex}
   Exercise 1.3 in the lecture notes.
 \end{ex}
+\begin{sol}
+  This was computed in the lecture. A double precision floating point number has
+  a 52 binary digit mantiassa, so its accuracy is $2^{-52} \approx 10^{-16}$.
+  Therefore, about 16 decimal digits.
+\end{sol}
 
 \begin{ex}
   Exercise 1.4 in the lecture notes.
 \end{ex}
+\begin{sol}
+  Some options:
+  \begin{itemize}
+  \item Use nested loops, where none of the loops go higher than about $10^9$
+    iterations.
+  \item Use a larger datatype. E.g. in C, \texttt{long} (at least 32 bits) or
+    \texttt{long long} (at least 64). Note that a C \texttt{int} may be as low
+    as 16 bits.
+  \item Use an unsigned datatype. This gives us twice the range since the sign
+    bit isn't needed.
+  \end{itemize}
+\end{sol}
 
 \begin{ex}
   Exercise 1.5 in the lecture notes.
 \end{ex}
+\begin{sol}
+  The first case needs $n$ additions and multiplications, so $2n =
+  \mathcal{O}(n)$ operations total.
+
+  For the second case, each element of $y$ requires $n$ multiplications and
+  $n-1$ additions to form. Therefore the total number of operations should be
+  $n(n + n - 1) = n(2n-1) = \mathcal{O}(n^2)$.
+\end{sol}
 
 \begin{ex}
   Exercise 1.6 in the lecture notes.
 \end{ex}
+\begin{sol}
+  The matrix requires $n^2$ numbers to store, and each of the vectors requires
+  $n$. We assume double precision floating point numbers ($\SI{8}{\byte}$ per
+  number). Let us also assume that $n$ is large, so that the total memory
+  requirement will be approximately $n^2$ numbers.
+  \[
+    8n^2 = 10^9 \quad\Longrightarrow\quad n \approx 11180.
+  \]
+  Therefore, only about $10^4$ unknowns can fit in this memory.
+\end{sol}
 
 \begin{ex}
   In the lecture we found that adding a small number to a large number can cause
@@ -60,6 +158,30 @@
   With this in mind, suggest an algorithm for summing a list of numbers that is
   more accurate than doing it ``naively''.
 \end{ex}
+\begin{sol}
+  The simplest solution is to sort the numbers before summing them in order from
+  smallest to largest. However, this approach has complexity $\mathcal{O}(n\log
+  n)$, which is worse than naive summation.
+
+  The \emph{Kahan} algorithm keeps track of the lost bits and tries to add them
+  on the following iterations. For each element $s_i$ in the input array, the
+  sum is updated as
+  \[
+    S_i = S_{i-1} + \underbrace{s_i + c_{i-1}}_{y_i},
+  \]
+  where $S_i$ is the sum of the first $i$ elements, and $c_{i-1}$ is the
+  compensation from the first $i-1$ elements. However, since the sum $S_{i-1}$
+  is large, and $y_i$ is small, the lower bits may be lost. These lower bits are
+  computed and used as compensation for the next iteration:
+  \[
+    c_i = y_i - \underbrace{(S_i - S_{i-1})}_{\text{high bits of $y_i$}}.
+  \]
+  Subtracting the high bits of $y_i$ from $y_i$ should leave just the low bits,
+  which were exactly what went missing.
+
+  Note that algebraically (in infinite precision arithmetic), $c_i$ should
+  always be zero.
+\end{sol}
 
 \begin{ex}
   Implement a C or Fortran program that calculates $\bm y = \bm A \bm x$.
@@ -72,5 +194,30 @@
     \end{pmatrix}, \qquad \bm x = \begin{pmatrix} 1.0 \\ 1.0 \\ 1.0 \end{pmatrix}.
   \end{align*}
 \end{ex}
+\newpage
+\begin{sol}
+  In C:
+
+  \begin{lstlisting}[style=c]
+#include <stdio.h>
+
+const double A[][3] = {{0.3, 0.4, 0.3},
+                       {0.7, 0.1, 0.2},
+                       {0.5, 0.5, 0.0}};
+const double x[3] = {1.0, 1.0, 1.0};
+
+int main(int argc, char **argv)
+{
+  double y[3];
+  for (int i = 0; i < 3; i++) {
+    y[i] = 0.0;
+    for (int j = 0; j < 3; j++)
+      y[i] += A[i][j] * x[j];
+  }
+  printf("y = %f %f %f\n", y[0], y[1], y[2]);
+  return 0;
+}
+  \end{lstlisting}
+\end{sol}
 
 \end{document}
