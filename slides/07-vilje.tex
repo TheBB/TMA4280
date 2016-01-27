@@ -1,0 +1,280 @@
+\input{preamble}
+
+\title{Vilje crash course}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Supercomputing---a users guide}
+  \begin{itemize}
+  \item Supercomputers use, with very few exceptions, a Unix-type operating system.
+  \item Predominantly Linux these days.
+  \item Students have varying degrees of Unix knowledge.
+  \item This will be a crash course in using one such system (Vilje).
+  \item Some basic knowledge of shell is assumed (see the crash course slides).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How do I log onto the system?}
+  \begin{itemize}
+  \item Login is handled through \emph{secure shell} or SSH for short.
+  \item On Linux and OSX computers, SSH clients are typically pre-installed.
+  \item On Windows you need to install separately.
+  \item One example of a client: PuTTy.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How do I log onto the system?}
+  \begin{itemize}
+  \item We will be using the \emph{Vilje} cluster.
+  \item URL: \texttt{vilje.hpc.ntnu.no}
+  \item On a Linux or OSX shell (e.g. bash):
+\begin{lstlisting}[style=shell]
+ssh username@vilje.hpc.ntnu.no
+\end{lstlisting}
+  \item This will bring you to a \emph{login terminal}. Not an actual node.
+  \item Note: This machine is NOT accessible from the outside world.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How do I transfer files to/from the system?}
+  \begin{itemize}
+  \item File transfers is performed using \emph{secure copy} or \emph{scp} for short.
+  \item On a Linux or OSX computer, this comes preinstalled.
+  \item On Windows you need to use special software capable of performing SSH transfers.
+  \item One example of such an application is \emph{WinSCP}.
+  \item Alternative approach Linux: \emph{sshfs} or \emph{sftp}.
+  \item Alternative approach Windows: \emph{mindTerm} or \emph{NetDrive}.
+  \item Alternative approach (both): GIT!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{But I'm lazy}
+  \begin{itemize}
+  \item You can avoid typing your password:
+\begin{lstlisting}[style=shell]
+ssh-keygen
+ssh-copy-id username@vilje.hpc.ntnu.no
+\end{lstlisting}
+  \item Putty has some kind of key mechanism but I do not know the details.
+  \item You can even avoid typing the address. Put this in
+    \texttt{\textasciitilde/.ssh/config}:
+\begin{lstlisting}[style=shell]
+Host vilje
+    Hostname vilje.hpc.ntnu.no
+    User eivindfo
+\end{lstlisting}
+    Then you can log in with
+\begin{lstlisting}[style=shell]
+ssh vilje
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Editing files}
+  \begin{itemize}
+  \item Emacs (use locally if you can, the one on Vilje is older than time)
+  \item Vim (handy for using remotely, a bit of a learning curve)
+  \item Nano (simpler than Vim)
+  \item Gedit (nice graphical editor)
+  \item Kate (same, not installed on Vilje)
+  \item Notepad++ (good for Windows users, not installed on Vilje)
+  \item \ldots
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Graphical display (X11 forwarding)}
+  If you want to run graphical programs on Vilje you have to tunnel the display
+  through ssh. This is called \emph{X forwarding}.
+  \begin{itemize}
+  \item In Linux, it's quite easy:
+\begin{lstlisting}[style=shell]
+ssh -X vilje
+\end{lstlisting}
+  Or in your \texttt{\textasciitilde/.ssh/config}:
+\begin{lstlisting}[style=shell]
+ForwardX11 Yes
+\end{lstlisting}
+    \item In OSX, you have to start \texttt{X11.app}, then do the same.
+    \item In Windows, you can use \emph{X-Win32}, which is available on progdist.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Modules}
+  All software on NOTUR is offered through a \emph{modules} system. They will
+  not be available to you until you load the module in question.
+  \begin{itemize}
+  \item List available modules:
+\begin{lstlisting}[style=shell]
+module avail
+\end{lstlisting}
+  \item Load a module:
+\begin{lstlisting}[style=shell]
+module load intelcomp
+\end{lstlisting}
+  \item Load a module with a specific version:
+\begin{lstlisting}[style=shell]
+module load intelcomp/13.0.1
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Modules}
+  Some relevant modules for this course:
+  \begin{itemize}
+    \item \texttt{intelcomp}: Intel's compilers (\texttt{icc}, \texttt{icpc} and
+      \texttt{ifort}).
+    \item \texttt{mpt}: SGI's implementation of MPI (\emph{Message Passing
+        Toolkit}).
+    \item \texttt{cmake}
+    \item \texttt{mercurial}: If you like DVCS but not git.
+  \end{itemize}
+
+  Note that if you use CMake to build your programs, you have to tell it to use
+  Intel's compilers:
+\begin{lstlisting}[style=shell]
+mkdir build
+cd build
+CXX=icpc CC=icc FC=ifort cmake ..
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Running jobs on Vilje}
+  After compiling your program, you have to write a \emph{job script}. Example
+  (the \emph{pi} program):
+\begin{lstlisting}[style=shell]
+  #!/bin/bash
+
+  #PBS -N pi
+  #PBS -A ntnu603
+  #PBS -l walltime=00:01:00
+  #PBS -l select=2:ncpus=32:mpiprocs=16
+
+  cd $PBS_O_WORKDIR
+  module load mpt
+  mpiexec_mpt ./pi 1000000
+\end{lstlisting}
+%$
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Running jobs on Vilje}
+\begin{lstlisting}[style=shell]
+  #PBS -N pi
+\end{lstlisting}
+  My job is called ``pi''.
+\begin{lstlisting}[style=shell]
+  #PBS -A ntnu603
+\end{lstlisting}
+  The time spent executing this job should be charged to ntnu603.
+\begin{lstlisting}[style=shell]
+  #PBS -l walltime=00:01:00
+\end{lstlisting}
+  The walltime limit for this job is one minute.
+\begin{lstlisting}[style=shell]
+  #PBS -l select=2:ncpus=32:mpiprocs=16
+\end{lstlisting}
+  I want two units of 32 CPUs each (two nodes, that is) and I want 16 processes
+  on each of them (32 in total). On Vilje, \texttt{ncpus} should \emph{always}
+  be equal to 32.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Running jobs on Vilje}
+\begin{lstlisting}[style=shell]
+  cd $PBS_O_WORKDIR
+\end{lstlisting}
+%$
+  Ensure that we are in the correct directory. This should always be in your job
+  script.
+\begin{lstlisting}[style=shell]
+  module load mpt
+\end{lstlisting}
+  Make sure the \texttt{mpt} module is loaded so that the \texttt{mpiexec\_mpt}
+  command is available.
+\begin{lstlisting}[style=shell]
+  mpiexec_mpt ./pi 1000000
+\end{lstlisting}
+  Run the program.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Running jobs on Vilje}
+  Submit a job using \texttt{qsub}:
+\begin{lstlisting}[style=shell]
+  qsub job.sh
+  5723717.service2
+\end{lstlisting}
+  \texttt{qsub} will reply with a job ID number. You can ask for the status of
+  your job with
+\begin{lstlisting}[style=shell]
+  qstat -f 5723717.service2
+\end{lstlisting}
+  or see a list of all jobs running and queued
+\begin{lstlisting}[style=shell]
+  qstat
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Running jobs on Vilje}
+  When the program has completed, the accumulated output will be written to
+  files in the same folder you launched it from.
+\begin{lstlisting}[style=shell]
+  ls
+  job.sh  pi  pi.c  pi.e5723717  pi.o5723717
+\end{lstlisting}
+  The \texttt{e}-file contains stderr (empty?) and the \texttt{o}-file contains
+  output from stdout (the most interesting one).
+\begin{lstlisting}[style=shell,basicstyle=\ttfamily\footnotesize]
+  cat pi.o5723717
+  Agent pid 21651
+  pi=3.141593e+00, error=8.437695e-14, duration=2.177000e-03
+  Start Epilogue v3.0.1 Wed Jan 27 14:18:27 CET 2016
+  clean up
+  End Epilogue v3.0.1 Wed Jan 27 14:18:28 CET 2016
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Other PBS options}
+\begin{lstlisting}[style=shell]
+  #PBS -o stdout
+  #PBS -e stderr
+\end{lstlisting}
+I want my output files to have more sensible names.
+\begin{lstlisting}[style=shell]
+  #PBS -m abe
+\end{lstlisting}
+I want an e-mail notification when the job starts (\texttt{b}), ends
+(\texttt{e}) or if it aborts (\texttt{a}).
+\begin{lstlisting}[style=shell]
+  #PBS -M some@where.com
+\end{lstlisting}
+\ldots and this is where that e-mail should be sent to.
+\begin{lstlisting}[style=shell]
+  #PBS -l ...:ompthreads=16
+\end{lstlisting}
+I want 16 OpenMP threads per process.
+\end{frame}
+
+\begin{frame}
+  \frametitle{More information}
+  \begin{center}
+    The NTNU HPC Wiki has a very good user guide. \\~\\
+    https://www.hpc.ntnu.no/display/hpc/User+Guide
+  \end{center}
+\end{frame}
+
+\input{postamble}
