@@ -1,0 +1,128 @@
+\documentclass[onecolumn, oneside, a4paper, 11pt]{memoir}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Paths
+\newcommand{\figs}{../figs}
+\newcommand{\data}{../data}
+
+% Fonts
+\usepackage{newpxtext,newpxmath}
+\renewcommand*\sfdefault{cmss}
+
+% References
+\usepackage{hyperref}
+
+% Units
+\usepackage[detect-weight=true, binary-units=true]{siunitx}
+\DeclareSIUnit\flop{Flops}
+
+% Math
+\let\openbox\undefined
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+
+\theoremstyle{remark}
+\newtheorem{ex}{Exercise}
+\newtheorem*{sol}{Solution}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\graphicspath{{../figs/}}
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,arrows,calc,intersections}
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{compat=1.8}
+
+% Colors
+\definecolor{darkblue}{HTML}{00688B}
+\definecolor{darkgreen}{HTML}{6E8B3D}
+\definecolor{cadet}{HTML}{DAE1FF}
+\definecolor{salmon}{HTML}{FFB08A}
+
+% Listings
+\usepackage{textcomp}
+\usepackage{listings}
+\lstset{
+  keywordstyle=\bfseries\color{orange},
+  stringstyle=\color{darkblue!80},
+  commentstyle=\color{darkblue!80},
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  upquote=true,
+}
+\lstdefinestyle{fortran}{
+  language=Fortran,
+  morekeywords={for},
+  deletekeywords={status},
+}
+\lstdefinestyle{c}{
+  language=C,
+  morekeywords={include},
+}
+\lstdefinestyle{shell}{
+  language=bash,
+}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{center}
+  {\Huge \bfseries \scshape
+    Introduction to \\[0.2\baselineskip] Supercomputing} \\[2\baselineskip]
+  {\Large TMA4280 $\cdot$ Problem set 3} \\[2\baselineskip]
+\end{center}
+
+\begin{ex}
+  Go to \url{http://top500.org}, a website cataloguing the top 500
+  supercomputers in the world. Study the top 10, in particular their technical
+  specifications. What is meant by the LINPACK benchmark performance?
+\end{ex}
+
+\begin{ex}
+  Note that some of this was not covered in detail in the lecture. Please have a
+  look at the lecture notes.
+  \begin{enumerate}
+  \item What limits the scalability of a bus-based interconnect?
+  \item How are the individual processors connected using a crossbar?
+  \item How are the individual processors connected using a mesh?
+  \item What is the difference between a shared-memory and a distributed
+    memory architecture?
+  \item What characterizes the memory access in an SMP?
+  \item What is the difference between a NUMA and a ccNUMA architecture?
+  \end{enumerate}
+\end{ex}
+
+\begin{ex}
+  How many bytes are sent in each of the three messages listed below? Here given
+  in C, but that's not important.
+
+\begin{lstlisting}[style=c]
+MPI_Send(buf1, 80, MPI_CHAR, dest, tag, MPI_COMM_WORLD);
+MPI_Send(buf2, 1024, MPI_INT, dest, tag, MPI_COMM_WORLD);
+MPI_Send(buf3, 1024, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
+\end{lstlisting}
+\end{ex}
+
+\begin{ex}
+  Is it true that a unique tag must be specified each time \texttt{MPI\_Recv} is
+  called?
+\end{ex}
+
+\begin{ex}
+  Implement the program from the previous exercise using MPI. It should run on
+  any number of processes.
+
+  Hint: Partition the matrix in column strips.
+\end{ex}
+
+\end{document}
