@@ -87,6 +87,9 @@
   supercomputers in the world. Study the top 10, in particular their technical
   specifications. What is meant by the LINPACK benchmark performance?
 \end{ex}
+\begin{sol}
+  Self study.
+\end{sol}
 
 \begin{ex}
   Note that some of this was not covered in detail in the lecture. Please have a
@@ -101,6 +104,37 @@
   \item What is the difference between a NUMA and a ccNUMA architecture?
   \end{enumerate}
 \end{ex}
+\begin{ex} ~
+  \begin{enumerate}
+  \item The limitation of a bus-based system lies in the fact that the total
+    bandwith is fixed, and given by the bus. We can easily add more processors,
+    but they must share the same bus, so the total amount of bandwidth available
+    to each processor \emph{on average} is reduced.
+
+    Note that caches can reduce bandwidth demand, since if a value can be found
+    in the cache there's no need to use the bus. This introduces the problem of
+    cache consistency.
+  \item In a crossbar configuration, there are multiple paths between each
+    processor and memory unit. Here, the bandwith available to each processor
+    remains constant as more processors are added. However, each added processor
+    is associated with much higher cost than in the bus case.
+  \item In a mesh topology, each processor is connected to the directly
+    neighboring processors according to a fixed regular pattern, resembling a
+    structured mesh in $d$ dimensions. Each processor in the interior is
+    connected to $2d$ other processors, two for each dimension (negative and
+    positive direction). A variation on this structure is a toroidal system in
+    which the same holds for boundary processors.
+  \item In a shared-memory system, all processors have access to all the
+    available memory in the same address space. In a distributed memory system,
+    each processor only has local memory access, and data stored in other units
+    can only be retrieved with explicit message passing.
+  \item In an SMP, the memory access time is (nearly) constant, independent of
+    processor and memory unit.
+  \item ccNUMA stands for \emph{cache-coherent} NUMA. A ccNUMA system has some
+    form of mechanism for ensuring that the caches of each processor remain
+    consistent with the others and the main memory units.
+  \end{enumerate}
+\end{ex}
 
 \begin{ex}
   How many bytes are sent in each of the three messages listed below? Here given
@@ -112,11 +146,26 @@ MPI_Send(buf2, 1024, MPI_INT, dest, tag, MPI_COMM_WORLD);
 MPI_Send(buf3, 1024, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
 \end{lstlisting}
 \end{ex}
+\begin{sol} ~
+  \begin{enumerate}
+  \item Each char uses one byte, so a message of 80 chars uses 80 bytes of
+    memory.
+  \item On most modern systems today, a C int is four bytes, so such a message
+    would require $1024 \cdot 4 = 4096$ bytes of memory. Note that the C
+    standard only requires an int to be at least two bytes.
+  \item A double is eight bytes, so this message requires $1014 \cdot 8 = 8192$
+    bytes of memory.
+  \end{enumerate}
+\end{sol}
 
 \begin{ex}
   Is it true that a unique tag must be specified each time \texttt{MPI\_Recv} is
   called?
 \end{ex}
+\begin{sol}
+  No, for example it is possible to receive messages with any tag by using
+  \texttt{MPI\_ANY\_TAG} in \texttt{MPI\_Recv}.
+\end{sol}
 
 \begin{ex}
   Implement the program from the previous exercise using MPI. It should run on
@@ -124,5 +173,8 @@ MPI_Send(buf3, 1024, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
 
   Hint: Partition the matrix in column strips.
 \end{ex}
+\begin{sol}In C:
+  \lstinputlisting[style=c]{ex3.5.c}
+\end{sol}
 
 \end{document}
