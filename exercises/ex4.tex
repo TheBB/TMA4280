@@ -1,0 +1,169 @@
+\documentclass[onecolumn, oneside, a4paper, 11pt]{memoir}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Paths
+\newcommand{\figs}{../figs}
+\newcommand{\data}{../data}
+
+% Fonts
+\usepackage{newpxtext,newpxmath}
+\renewcommand*\sfdefault{cmss}
+
+% References
+\usepackage{hyperref}
+
+% Units
+\usepackage[detect-weight=true, binary-units=true]{siunitx}
+\DeclareSIUnit\flop{Flops}
+
+% Math
+\let\openbox\undefined
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+
+\theoremstyle{remark}
+\newtheorem{ex}{Exercise}
+\newtheorem*{sol}{Solution}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\graphicspath{{../figs/}}
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,arrows,calc,intersections}
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{compat=1.8}
+
+% Colors
+\definecolor{darkblue}{HTML}{00688B}
+\definecolor{darkgreen}{HTML}{6E8B3D}
+\definecolor{cadet}{HTML}{DAE1FF}
+\definecolor{salmon}{HTML}{FFB08A}
+
+% Listings
+\usepackage{textcomp}
+\usepackage{listings}
+\lstset{
+  keywordstyle=\bfseries\color{orange},
+  stringstyle=\color{darkblue!80},
+  commentstyle=\color{darkblue!80},
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  upquote=true,
+}
+\lstdefinestyle{fortran}{
+  language=Fortran,
+  morekeywords={for},
+  deletekeywords={status},
+}
+\lstdefinestyle{c}{
+  language=C,
+  morekeywords={include},
+}
+\lstdefinestyle{shell}{
+  language=bash,
+}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{center}
+  {\Huge \bfseries \scshape
+    Introduction to \\[0.2\baselineskip] Supercomputing} \\[2\baselineskip]
+  {\Large TMA4280 $\cdot$ Problem set 4} \\[2\baselineskip]
+\end{center}
+
+\textbf{Note that}
+\begin{itemize}
+\item this problem set is mandatory;
+\item you can work on it in groups with \emph{up to} 3 members;
+\item you should write a report describing your solution, as continuous text;
+\item the source code should be handed in together with the report (and not as
+  part of it);
+\item please make sure that you have answered all the questions;
+\item the due date is Friday, February 19, 2015;
+\item the report will count 10\% towards the final grade.
+\end{itemize}
+
+We consider a vector $\bm v \in \mathbb{R}^n$ where the vector elements are
+defined as
+\[
+  v_i = \frac{1}{i^2}, \qquad i=1,\ldots,n.
+\]
+We are interested in computing the sum of all vector elements numerically, i.e.
+we want to find $S_n$, where
+\[
+  S_n = \sum_{i=1}^n v_i.
+\]
+Note that the limit is
+\[
+  S = \lim_{n\to\infty} S_n = \frac{\pi^2}{6}.
+\]
+
+\begin{ex}
+  Write a program, in either C or Fortran, that
+  \begin{itemize}
+  \item generates the vector $\bm v$;
+  \item computes the sum $S_n$ in double precision on a single process;
+  \item computes the error $|S - S_n|$ for $n=2^k$ with $k=3,4,\ldots,14$;
+  \item prints out the error $|S - S_n|$ in double precision.
+  \end{itemize}
+\end{ex}
+
+\begin{ex}
+  Make the necessary changes needed to use shared memory parallelization with
+  OpenMP.
+\end{ex}
+
+\begin{ex}
+  Write a program that computes the sum $S_n$ using a distributed memory model
+  (MPI) on $P$ processors, where $P$ is a power of two.
+
+  The program should work as follows. Only process zero (the root) should be
+  responsible for generating the vector elements. The root should partition and
+  distribute the elements evenly among all the processes. Each process should
+  sum up its own part. At the end, all the partial sums should be added together
+  and made available on the root for printing. Report the error $|S-S_n|$ in
+  double precision for different values of $n$.
+\end{ex}
+
+\begin{ex}
+  Confirm that your program also works when using OpenMP and MPI in
+  combination.
+\end{ex}
+
+\begin{ex}
+  Which MPI calls were convenient and/or necessary to use?
+\end{ex}
+
+\begin{ex}
+  Compare the errors from the single-process program and the multi-process
+  program for $P=2$ and $P=8$. Should the answer be the same in all cases?
+  Exactly, or approximately?
+\end{ex}
+
+\begin{ex}
+  Compare the memory requirement per process for the single-process program and
+  the multi-process program when $n \gg 1$.
+\end{ex}
+
+\begin{ex}
+  How many floating point operations are needed to generate the vector $\bm v$?
+  How many are needed to compute $S_n$? Is the multi-process program load
+  balanced?
+\end{ex}
+
+\begin{ex}
+  Do you consider parallel processing attractive for solving this problem?
+\end{ex}
+
+\end{document}
