@@ -1,0 +1,304 @@
+\input{preamble}
+
+\title{Summing with OpenMP and MPI}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Simple example}
+  We consider a simple example: computing
+  \[
+    \alpha = \sum_{i=1}^K \bm v_i^\intercal \bm A \bm v_i
+  \]
+  where $\bm v \in \mathbb{R}^{N \times K}$ and
+  $\bm A \in \mathbb{R}^{N \times N}$. There are $K$ terms, each of which
+  require us to compute a matrix-vector product and an inner product.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Serial}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+void MxV(double *u, double **A, double *v, int N)
+{
+  for (size_t i = 0; i < N; i++) {
+    u[i] = 0.0;
+    for (size_t j = 0; j < N; j++)
+      u[i] += A[i][j] * v[j];
+  }
+}
+
+double innerproduct(double *u, double *v, int N)
+{
+  double result = 0.0;
+  for (size_t i = 0; i < N; i++)
+    result += u[i] * v[i];
+  return result;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Serial}
+\begin{lstlisting}[style=c]
+double dosum(double **A, double **v, int K, int N)
+{
+  double alpha = 0.0, temp[N];
+  for (size_t i = 0; i < K; i++) {
+    MxV(temp, A, v[i], N);
+    alpha += innerproduct(temp, v[i], N);
+  }
+
+  return alpha;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{OpenMP micro-version}
+  \begin{itemize}
+  \item It is tempting to exploit all parallelism in sight. However, don't do
+    that.
+  \item Let us use OpenMP for micro-parallelism. That is, we exploit parallelism
+    within the inner product and the matrix-vector operation.
+  \item That means two fork/join operations per term, so $2K$ in total.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{OpenMP micro-version}
+\begin{lstlisting}[style=c]
+void MxV(double *u, double **A, double *v, int N)
+{
+  #pragma omp parallel for schedule(static)
+  for (size_t i = 0; i < N; i++) {
+    u[i] = 0.0;
+    for (size_t j = 0; j < N; j++)
+      u[i] += A[i][j] * v[j];
+  }
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{OpenMP micro-version}
+\begin{lstlisting}[style=c]
+double innerproduct(double *u, double *v, int N)
+{
+  double result = 0.0;
+  #pragma omp parallel for schedule(static) \
+          reduction(+:result)
+  for (size_t i = 0; i < N; i++)
+    result += u[i] * v[i];
+  return result;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{OpenMP macro-version}
+  \begin{itemize}
+  \item The alternative is to exploit the coarsest parallelism: each iteration
+    in the \texttt{dosum} method.
+  \item In this case we perform exactly one fork and one join.
+  \item Problem: the \texttt{dosum} method uses a temporary buffer for the
+    matrix-vector multiplication, which cannot be shared between threads. We
+    have to use a separate buffer for each thread.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{OpenMP macro-version}
+\begin{lstlisting}[style=c]
+double dosum(double **A, double **v, int K, int N)
+{
+  double alpha = 0.0;
+  double **temp = createMatrix(K, N);
+  #pragma omp parallel for schedule(static) \
+          reduction(+:alpha)
+  for (size_t i = 0; i < K; i++) {
+    MxV(temp[i], A, v[i], N);
+    alpha += innerproduct(temp[i], v[i], N);
+  }
+
+  return alpha;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{MPI macro-version}
+\begin{lstlisting}[style=c]
+double dosumMPI(double **A, double **v,
+                int myK, int N)
+{
+  double myalpha = dosum(A, V, myK, N);
+  double alpha;
+  MPI_Allreduce(&myalpha, &alpha, 1, MPI_DOUBLE,
+                MPI_SUM, MPI_COMM_WORLD);
+  return alpha;
+}
+\end{lstlisting}
+  In addition to the usual MPI code, you have to decide on a particular division
+  of the work among the nodes. For brevity's sake, it is left out in this
+  example.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Speedup results}
+  \begin{center}
+    \begin{table}
+      \caption{$N=2048$, $K=1024$}
+      \bgroup\def\arraystretch{1.2}
+      \begin{tabular}{rrrr}
+        \hline
+        Threads & Micro & Macro & MPI \\
+        \hhline{====}
+        1 & 1.00 & 1.00 & 1.00 \\
+        2 & 1.84 & 1.83 & 1.56 \\
+        4 & 2.79 & 2.76 & 3.46 \\
+        \hline
+      \end{tabular}
+      \egroup
+    \end{table}
+    \begin{table}
+      \caption{$N=16$, $K=32768$}
+      \bgroup\def\arraystretch{1.2}
+      \begin{tabular}{rrrr}
+        \hline
+        Threads & Micro & Macro & MPI \\
+        \hhline{====}
+        1 & 1.00 & 1.00 & 1.00 \\
+        2 & 0.50 & 2.00 & 2.00 \\
+        4 & 0.33 & 3.49 & 4.00 \\
+        \hline
+      \end{tabular}
+      \egroup
+    \end{table}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{BLAS}
+  \begin{itemize}
+  \item Can the serial code do better? Let's try.
+  \item A very helpful library here is \emph{BLAS}: Basic Linear Algebra
+    Subprograms.
+  \item BLAS is an old standard, from the late seventies and early eighties.
+  \item It consist of a bunch of functions with strangely cryptic and short
+    names.
+  \item Can be installed on Ubuntu with
+    \texttt{sudo apt-get install libblas-dev}.
+  \item On Vilje, Intel's implementation of BLAS is available under \emph{MKL}:
+    the Math Kernel Library.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{BLAS conventions}
+  \begin{itemize}
+  \item All functions in BLAS starts with one of the letters
+    \begin{itemize}
+    \item[s] for \emph{single}.
+    \item[d] for \emph{double}.
+    \item[c] for \emph{single complex}.
+    \item[z] for \emph{double complex}.
+    \end{itemize}
+  \item If the operation involves a matrix, two letters describing the matrix
+    format follow. The most important of these are
+    \begin{itemize}
+    \item[ge] for \emph{general} matrices.
+    \item[po] for \emph{symmetric} matrices.
+    \item[gb] for \emph{general banded} matrices.
+    \item[pb] for \emph{symmetric banded} matrices.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{BLAS levels}
+  \begin{itemize}
+  \item BLAS functions are organized by \emph{level}.
+  \item Level 1: vector-vector operations.
+    \[ \bm y = \alpha \bm x + \bm y \]
+    \texttt{daxpy(n, alpha, y, 1, x, 1)}
+  \item Level 2: matrix-vector operations.
+    \[ \bm y = \alpha \bm A \bm x + \beta \bm y \]
+    \texttt{dgemv('N', m, n, alpha, A, m, x, 1, beta, y, 1)}
+  \item Level 3: matrix-matrix operations
+    \[ \bm C = \alpha \bm A \bm B + \beta \bm C \]
+    \texttt{dgemm('N', 'N', m, n, k, alpha, A, m, B, k, C, m)}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{BLAS}
+  \begin{itemize}
+  \item The BLAS home page can be found at http://netlib.org/blas/
+  \item BLAS is written in Fortran and therefore expects Fortran memory layout
+    (column-major ordering).
+  \item For C, the \emph{CBLAS} implementation is popular. CBLAS supports both
+    row- and column-major orders.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Serial BLAS}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+void MxV(double *u, double *A, double *v, int N)
+{
+  dgemv('N', N, N, 1.0, A, N, v, 1, 0.0, u, 1);
+}
+
+double innerproduct(double *u, double *v, int N)
+{
+  // Necessary adjustments must be made for MPI
+  return ddot(N, u, 1, v, 1);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Timing results}
+  \begin{center}
+    \begin{table}
+      \caption{$N=2048$, $K=1024$}
+      \bgroup\def\arraystretch{1.2}
+      \begin{tabular}{rrrrr}
+        \hline
+        Threads & Macro & w/ BLAS & MPI & w/ BLAS \\
+        \hhline{=====}
+        1 & 35.20 & 2.06 & 35.27 & 2.05 \\
+        2 & 17.68 & 1.06 & 18.73 & 1.17 \\
+        4 &  9.08 & 0.66 &  9.15 & 0.61 \\
+        8 &  4.54 & 0.36 &  4.82 & 0.32 \\
+        \hline
+      \end{tabular}
+      \egroup
+    \end{table}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Timing results}
+  \begin{center}
+    \begin{table}
+      \caption{$N=16$, $K=32768$ (milliseconds)}
+      \bgroup\def\arraystretch{1.2}
+      \begin{tabular}{rrrrr}
+        \hline
+        Threads & Macro & w/ BLAS & MPI & w/ BLAS \\
+        \hhline{=====}
+        1 &  9.44 &  9.10 & 10.71 & 9.36 \\
+        2 & 20.08 & 24.31 &  7.62 & 4.48 \\
+        4 & 15.20 & 28.78 &  6.20 & 6.23 \\
+        8 &  7.36 & 23.89 &  5.58 & 4.68 \\
+        \hline
+      \end{tabular}
+      \egroup
+    \end{table}
+  \end{center}
+\end{frame}
+
+\input{postamble}
