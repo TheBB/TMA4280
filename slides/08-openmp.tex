@@ -1,4 +1,3 @@
-
 \input{preamble}
 
 \title{Parallelization using OpenMP}
@@ -104,10 +103,29 @@
   \item OpenMP is used by giving the compiler instructions through
     \texttt{\#pragma} commands. Note that these instructions are \emph{NOT} part
     of the programming language itself, in contrast to \texttt{MPI}.
-  \item There are two types of pragmes: those used in combination with loop
-    constructs, or those that are used to mark sections of the code that can run
-    in parallel.
+  \item There are three types of pragmas:
+    \begin{itemize}
+    \item parallelizing a single block
+    \item in combination with loop constructs
+    \item to mark sections of the code that can run in parallel
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Example: a single block}
+  OpenMP ``hello world''.
+\begin{lstlisting}[style=c]
+  #include "omp.h"
+
+  #pragma omp parallel
+  {
+    int thread = omp_get_thread_num();
+    printf("Hello world from thread number %d\n",
+           thread);
+  }
+\end{lstlisting}
+  The code inside the block is executed by each participating thread.
 \end{frame}
 
 \begin{frame}[fragile]
@@ -226,6 +244,54 @@ for (int i = 0; i < 100; i++)
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Shared and private variables}
+  As a rule,
+  \begin{itemize}
+  \item variables that are declared \emph{outside} the parallel construct are
+    shared between threads. Extra care must be taken when writing to these
+    variables, and it should preferably be avoided if at all possible.
+  \item variables that are declared \emph{inside} are private: each thread has
+    its own copy of it. Since a parallel block defines a scope, these variables
+    do not leak out to the surrounding serial scope.
+  \end{itemize}
+  It is possible to override this using \texttt{private(...)} and
+  \texttt{shared(...)} directives in OpenMP pragmas, where in each case the
+  \ldots is a list of variables.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Example: summing a vector}
+\begin{lstlisting}[style=c]
+  double vec[N] = { ... };
+  double sum = 0.0;
+
+  #pragma omp parallel for
+  for (size_t i = 0; i < N; i++)
+    sum += vec[i];
+\end{lstlisting}
+  Here, \texttt{i} is private and \texttt{sum}, \texttt{vec} and \texttt{N} are
+  shared. \\~\\
+
+  We are writing to a shared variable. How do we solve this?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Example: summing a vector}
+  OpenMP supports the \emph{reduction} directive for precisely this kind of
+  situation.
+\begin{lstlisting}[style=c]
+  double vec[N] = { ... };
+  double sum = 0.0;
+
+  #pragma omp parallel for reduction(+:sum)
+  for (size_t i = 0; i < N; i++)
+    sum += vec[i];
+\end{lstlisting}
+  Now, each thread gets its private variable \texttt{sum}, and after the loop,
+  each of these variables are summed into the shared one.
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Critical sections}
   \begin{center}
     \scalebox{0.8}{\input{\figs/critical}}
@@ -314,6 +380,20 @@ endif()
     \end{lstlisting}
 %$
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Number of threads}
+  The number of threads spawned is determined in the following order.
+  \begin{enumerate}
+  \item Programs can call \texttt{omp\_set\_num\_threads(int)} to request a number
+    of threads at runtime. This function is defined in \texttt{omp.h}.
+  \item The environment variable \texttt{OMP\_NUM\_THREADS}, if it exists. You can
+    run your programs in most shells as
+    \texttt{OMP\_NUM\_THREADS=8 ./myprogram}.
+  \item A sensible default value which depends on your system hardware.
+    Typically this will be the number of logical cores.
+  \end{enumerate}
 \end{frame}
 
 \begin{frame}
