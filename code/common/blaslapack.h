@@ -159,4 +159,10 @@ void dpotrs(char *uplo, int *n, int *nrhs, double* A, int* lda,
 int dtrtrs(char *uplo, char* trans, char* diag, int *n, int *nrhs,
            double* A, int* lda, double* B, int* ldb, int* info);
 
+int dgetrs(char trans, int *n, int *nrhs, double *a, int* lda,
+           int *ipiv, double *b, int *ldb, int *info);
+
+int dposv(char *uplo, int *n, int *nrhs, double *a, int *lda,
+          double *b, int *ldb, int *info);
+
 #endif
