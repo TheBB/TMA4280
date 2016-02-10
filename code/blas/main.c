@@ -1,5 +1,10 @@
 #include <stdio.h>
+
+#ifdef HAS_MKL
+#include "mkl_cblas.h"
+#else
 #include "cblas.h"
+#endif
 
 int main(int argc, char **argv)
 {
