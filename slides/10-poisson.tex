@@ -354,4 +354,101 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Discretization in 2D}
+  If the domain $\Omega$ is rectangular, we can use two independent grids
+  $\{x_i\}_{i=0}^N$ and $\{y_j\}_{j=0}^M$in the $x$ and $y$-directions.
+  \begin{center}
+    \scalebox{0.7}{\input{\figs/2d-grid}}
+  \end{center}
+  \begin{align*}
+    x_i &= x_0 + ih_x, \\
+    y_j &= y_0 + jh_y.
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite differences in 2D}
+  We need to approximate $u_{xx} + u_{yy}$ at a point $(x_i, y_j)$. Therefore,
+  we use two one-dimensional finite differences,
+  \begin{align*}
+    u_{xx}(x_i, y_i) &\approx \frac{1}{h_x^2}
+                       \left( u_{i-1,j} - 2u_{i,j} + u_{i+1,j} \right) \\
+    u_{yy}(x_i, y_i) &\approx \frac{1}{h_y^2}
+                       \left( u_{i,j-1} - 2u_{i,j} + u_{i,j+1} \right) \\
+  \end{align*}
+  If $h_x = h_y = h$ we get
+  \[
+    \nabla u(x_i, y_i) \approx \frac{1}{h^2}
+    \left( u_{i-1,j} + u_{i+1,j} + u_{i,j-1} + u_{i,j+1} - 4u_{i,j} \right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite differences in 2D}
+  This is known as the \emph{five-point} stencil. (The signs are flipped because
+  the Poisson equation involves $-\nabla$.)
+  \begin{center}
+    \input{\figs/five-point-stencil}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Node numbering in 2D}
+  Numbering nodes is not as trivial in 2D as in 1D. We use a ``natural''
+  ordering of the unknowns: we first number all the \emph{internal} nodes along
+  ``row'' 1 (in the $x$-direction), followed by the nodes in ``row'' 2, etc.
+  \begin{center}
+    \input{\figs/numbering}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrix block structure}
+  The final linear system will have a block-like structure,
+  \[
+    \underbrace{
+      \begin{pmatrix}
+        \bm A_0 & \bm A_1 & & & \\
+        \bm A_1 & \bm A_0 & \bm A_1 & & \\
+        & \bm A_1 & \bm A_0 & \ddots & \\
+        & & \ddots & \ddots & \bm A_1 \\
+        & & & \bm A_1 & \bm A_0
+      \end{pmatrix}}_{\bm A}
+    \underbrace{
+      \begin{pmatrix}
+        u_1 \\ u_2 \\ u_3 \\ \vdots \\ u_N
+      \end{pmatrix}}_{\bm u}
+    =
+    \underbrace{
+      \begin{pmatrix}
+        f_1 \\ f_2 \\ f_3 \\ \vdots \\ f_N
+      \end{pmatrix}}_{\bm g}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrix block structure}
+  The blocks $\bm A_0$ and $\bm A_1$ can be written as
+  \[
+    \bm A_0 =
+    \begin{pmatrix}
+      4 & -1 & & & \\
+      -1 & 4 & -1 & & \\
+      & -1 & 4 & \ddots & \\
+      & & \ddots & \ddots & -1 \\
+      & & & -1 & 4
+    \end{pmatrix}
+    \qquad
+    \bm A_1 =
+    \begin{pmatrix}
+      -1 & & & & \\
+      & -1 & & & \\
+      & & -1 & & \\
+      & & & \ddots & \\
+      & & & & -1
+    \end{pmatrix}.
+  \]
+\end{frame}
+
 \input{postamble}

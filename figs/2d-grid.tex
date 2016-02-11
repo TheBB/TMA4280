@@ -1,0 +1,15 @@
+\begin{tikzpicture}[scale=0.5]
+  \foreach \i in {0,2,4,6,8,10} {
+    \draw[thick, darkblue] (\i,0) -- (\i,8);
+  }
+  \foreach \j in {0,2,4,6,8} {
+    \draw[thick, darkblue] (0,\j) -- (10,\j);
+  }
+  \draw[thick, darkblue, fill=cadet] (4,4) circle (2mm);
+  \node[anchor=east] at (0,0) {$y_0$};
+  \node[anchor=east] at (0,4) {$y_j$};
+  \node[anchor=east] at (0,8) {$y_m$};
+  \node[anchor=north] at (0,0) {$x_0$};
+  \node[anchor=north] at (4,0) {$x_i$};
+  \node[anchor=north] at (10,0) {$x_n$};
+\end{tikzpicture}
