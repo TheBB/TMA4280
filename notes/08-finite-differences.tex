@@ -14,7 +14,7 @@ Common to all of these approaches is that at the end of the day, the partial
 differential equation is turned into a set of linear equations to solve, i.e.
 you end up with something on the form
 \[
-  \bm A \bm u = bm g
+  \bm A \bm u = \bm g
 \]
 where $\bm A$ is the matrix of linear equations, $\bm u$ is the vector of
 unknowns we seek and $\bm g$ is the load (the right hand side in the equation
@@ -577,7 +577,14 @@ necessary during the Gaussian elimination process.
 
 \begin{figure}
   \centering
-  \includegraphics[width=4cm]{Poisson2D_ntimesnGrid}
+  \begin{tikzpicture}
+    \foreach \i in {0,...,4} {
+      \draw[darkblue, very thick] (0,\i) -- (4,\i);
+      \draw[darkblue, very thick] (\i,0) -- (\i,4);
+      \node[anchor=east] at (0,2) {$n$};
+      \node[anchor=north] at (2,0) {$n$};
+    }
+  \end{tikzpicture}
   \caption{
     The two-dimensional grid associated with the finite difference solution of
     the Poisson problem. Here, $N \sim n^2$, while the bandwidth of
@@ -625,8 +632,14 @@ direct solution methods which often only depends on the problem size, $N$.
 
 \begin{figure}
   \centering
-  \includegraphics[height=0.2\textwidth]{Poisson2D_aspect1} \\
-  \includegraphics[height=0.2\textwidth]{Poisson2D_aspect2}
+  \begin{tikzpicture}
+    \foreach \i in {0,...,4} {
+      \draw[darkblue, very thick] (-2,\i) -- (2,\i);
+      \draw[darkblue, very thick] (-2+\i,0) -- (-2+\i,4);
+      \draw[darkblue, very thick] (-6,-5+\i) -- (6,-5+\i);
+      \draw[darkblue, very thick] (-6+3*\i,-5) -- (-6+3*\i,-1);
+    }
+  \end{tikzpicture}
   \caption{
     Two different computational domains for the Poisson problem, but with the
     same number of unknowns after discretization. The problem size, $N$, is

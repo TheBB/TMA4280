@@ -117,13 +117,13 @@ However, some of the observed differences may come as a surprise.
 \section{Compiling and running the programs}
 
 The source code and the buildsystem for the tests are found in the git
-repository at \url{https://github.com/akva2/tma4280}. CMake is used to generate
-the different Fortran programs, and to generate a build system capable of
-building the testing suite on most machines, including Vilje, Kongull or your
-local Linux/OSX machine. There is also a example job script (for Vilje, it needs
-some small changes for Kongull), a script to postprocess the results and (for
-those interested) the Octave/Matlab scripts used to generate the \LaTeX~code
-for the tables in this document.
+repository at \url{https://github.com/TheBB/TMA4280}, in the
+\url{code/performance} directory. CMake is used to generate the different
+Fortran programs, and to generate a build system capable of building the testing
+suite on most machines, including Vilje or your local Linux/OSX machine. There
+is also a example job script, a script to postprocess the results and (for those
+interested) the Octave/Matlab scripts used to generate the \LaTeX~code for the
+tables in this document.
 
 \section{Vector-vector operations}
 
@@ -382,12 +382,12 @@ floating point units busy enough.
 
 We recall that memory is allocated column-wise in Fortran and row-wise in C. In
 BLAS the Fortran convention is used. It is thus necessary to be careful when
-using two-dimensional arrays when calint \texttt{dgemm} (or other routines
+using two-dimensional arrays when calling \texttt{dgemm} (or other routines
 following the Fortran convention).
 
 To ensure correctness, there are several ways to proceed. By switching indices
 when accessing arrays in C, a ``pseduo'' column-wise allocation is achieved.
-This is the approach we choosed to use here (and in the rest of the course).
+This is the approach we chose to use here (and in the rest of the course).
 Sometimes it may be possible to use a version of the library that accepts
 row-wise allocation, such as the CBLAS library. However, CBLAS is not as
 universally available, so we have chosen the approach that is most portable.
