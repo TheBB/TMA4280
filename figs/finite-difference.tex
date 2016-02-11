@@ -1,0 +1,12 @@
+\begin{tikzpicture}
+  \draw[thick, darkblue] (0,0) -- (9,0);
+  \foreach \i in {0, 1, 5, 9} {
+    \draw[thin] (\i,-0.1) -- (\i,0.1);
+  }
+  \node[anchor=north] at (0,-0.1) {$x_0$};
+  \node[anchor=north] at (1,-0.1) {$x_1$};
+  \node[anchor=north] at (3,-0.2) {$\cdots$};
+  \node[anchor=north] at (5,-0.1) {$x_i$};
+  \node[anchor=north] at (7,-0.2) {$\cdots$};
+  \node[anchor=north] at (9,-0.1) {$x_N$};
+\end{tikzpicture}

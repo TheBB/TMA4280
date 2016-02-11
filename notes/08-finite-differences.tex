@@ -31,29 +31,7 @@ equations.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-      xmin=-1,
-      xmax=1,
-      ymin=0,
-      ymax=6,
-      axis lines=middle,
-      axis x line=center,
-      hide y axis,
-      xtick={-0.7,0.001,0.7},
-      xticklabels={$x_i-h$,$x_i$,$x_i+h$},
-      xlabel={$x$},
-      ]
-      \addplot[darkblue, thick, domain=-1:1, samples=100]{x^3+3};
-      \draw[thin, densely dashed] (axis cs:0.001,0) -- (axis cs:0,3);
-      \draw[thin, densely dashed] (axis cs:-0.7,0) -- (axis cs:-0.7,2.657);
-      \draw[thin, densely dashed] (axis cs:0.7,0) -- (axis cs:0.7,3.343);
-      \node[shape=circle, draw=darkblue, thick, fill=cadet, inner sep=0.5mm] at (axis cs:-0.7,2.657) {};
-      \node[shape=circle, draw=darkblue, thick, fill=cadet, inner sep=0.5mm] at (axis cs:0,3) {};
-      \node[shape=circle, draw=darkblue, thick, fill=cadet, inner sep=0.5mm] at (axis cs:0.7,3.343) {};
-      \node[anchor=east, xshift=-3mm] at (axis cs:1,4) {$u(x)$};
-    \end{axis}
-  \end{tikzpicture}
+  \input{\figs/sampling}
   \caption{The function $u(x)$ sampled at a finite difference grid.}
   \label{fig:FiniteDifference}
 \end{figure}
@@ -118,40 +96,14 @@ together with the boundary conditions constitute the Poisson problem.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-      xmin=-10,
-      xmax=190,
-      ymin=0,
-      ymax=3,
-      axis lines=middle,
-      axis x line=center,
-      hide y axis,
-      xtick={1,180},
-      xticklabels={$x=0$, $x=1$},
-      ]
-      \addplot[darkblue, thick, domain=0:180, samples=100]{sin(x) - 0.4*sin(2*x)};
-      \node[anchor=west] at (axis cs:140,1.2) {$u(x)$};
-    \end{axis}
-  \end{tikzpicture}
+  \input{\figs/poisson-solution}
   \caption{Domain and solution of the one-dimensional Poisson problem.}
   \label{fig:Poisson1D_Domain}
 \end{figure}
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}
-    \draw[thick, darkblue] (0,0) -- (9,0);
-    \foreach \i in {0, 1, 5, 9} {
-      \draw[thin] (\i,-0.1) -- (\i,0.1);
-    }
-    \node[anchor=north] at (0,-0.1) {$x_0$};
-    \node[anchor=north] at (1,-0.1) {$x_1$};
-    \node[anchor=north] at (3,-0.2) {$\cdots$};
-    \node[anchor=north] at (5,-0.1) {$x_i$};
-    \node[anchor=north] at (7,-0.2) {$\cdots$};
-    \node[anchor=north] at (9,-0.1) {$x_n$};
-  \end{tikzpicture}
+  \input{\figs/finite-difference}
   \caption{A finite difference grid.}
   \label{fig:Poisson1D_Grid}
 \end{figure}
@@ -221,19 +173,7 @@ It is common to represent the finite difference formula as a stencil, see
 mesh, it will generate the linear equations given in \eqref{eq:A}.
 \begin{figure}
   \centering
-  \begin{tikzpicture}[
-    every node/.style={
-      shape=circle,
-      thick,
-      fill=cadet,
-      draw=darkblue,
-      minimum size=1cm,
-    }]
-    \draw[thick, darkblue] (-2,0) -- (2,0);
-    \node at (-2,0) {$-1$};
-    \node at (0,0) {$+2$};
-    \node at (2,0) {$-1$};
-  \end{tikzpicture}
+  \input{\figs/three-point-stencil}
   \caption{
     Weights in the three-point finite difference stencil for the approximation
     of $-h^2u_{xx}$.

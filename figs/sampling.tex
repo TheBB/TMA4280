@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+  \begin{axis}[
+    xmin=-1,
+    xmax=1,
+    ymin=0,
+    ymax=6,
+    axis lines=middle,
+    axis x line=center,
+    hide y axis,
+    xtick={-0.7,0.001,0.7},
+    xticklabels={$x_i-h$,$x_i$,$x_i+h$},
+    xlabel={$x$},
+    ]
+    \addplot[darkblue, thick, domain=-1:1, samples=100]{x^3+3};
+    \draw[thin, densely dashed] (axis cs:0.001,0) -- (axis cs:0,3);
+    \draw[thin, densely dashed] (axis cs:-0.7,0) -- (axis cs:-0.7,2.657);
+    \draw[thin, densely dashed] (axis cs:0.7,0) -- (axis cs:0.7,3.343);
+    \node[shape=circle, draw=darkblue, thick, fill=cadet, inner sep=0.5mm] at (axis cs:-0.7,2.657) {};
+    \node[shape=circle, draw=darkblue, thick, fill=cadet, inner sep=0.5mm] at (axis cs:0,3) {};
+    \node[shape=circle, draw=darkblue, thick, fill=cadet, inner sep=0.5mm] at (axis cs:0.7,3.343) {};
+    \node[anchor=east, xshift=-3mm] at (axis cs:1,4) {$u(x)$};
+  \end{axis}
+\end{tikzpicture}

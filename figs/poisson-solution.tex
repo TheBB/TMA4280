@@ -1,0 +1,16 @@
+\begin{tikzpicture}
+  \begin{axis}[
+    xmin=-10,
+    xmax=190,
+    ymin=0,
+    ymax=3,
+    axis lines=middle,
+    axis x line=center,
+    hide y axis,
+    xtick={1,180},
+    xticklabels={$x=0$, $x=1$},
+    ]
+    \addplot[darkblue, thick, domain=0:180, samples=100]{sin(x) - 0.4*sin(2*x)};
+    \node[anchor=west] at (axis cs:140,1.2) {$u(x)$};
+  \end{axis}
+\end{tikzpicture}

@@ -1,0 +1,357 @@
+\input{preamble}
+
+\title{The Poisson problem}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{The Poisson problem}
+  \begin{itemize}
+  \item The Poisson equation is an elliptic partial differential equation.
+  \item The Poisson \emph{problem} is the solution of the Poisson
+    \emph{equation} equipped with a set of boundary conditions.
+  \item The equation is
+    \[
+      -\nabla^2 u = f, \qquad \text{ in } \Omega
+    \]
+    where $u$ is the unknown, $f$ is the load on the system and $\Omega$ denotes
+    some domain.
+  \item We remark that $\nabla^2$ is the sum of the second order partial
+    derivatives, e.g. in one and two dimensions the equation is
+    \[
+      -u_{xx} = f, \qquad -\left( u_{xx} + u_{yy} \right) = f.
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Poisson problem}
+  \begin{itemize}
+  \item This problem is important because a number of physical processes are
+    modelled either entirely or in part by the Poisson equation.
+  \item The technical term is a \emph{diffusion process}: $u$ is to be
+    interpreted as the concentration of ``something'', and $f$ as the rate at
+    which ``something'' is introduced ($f > 0$) or removed ($f < 0$) from the
+    domain.
+  \item ``Something'' may be particles, but also abstract notions such as heat
+    or potentials.
+  \item The solution in $\Omega$ is uniquely determined by the boundary data and
+    $f$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Electrostatics}
+  \begin{itemize}
+  \item The differential forms for the electric field $\bm E$ are
+    \[
+      \begin{split}
+        \nabla \cdot \bm E &= 4\pi\rho \\
+        \nabla \times \bm E &= 0,
+      \end{split}
+    \]
+    where $\rho$ is the charge density.
+  \item The electric field $\bm E$ can be expressed as the gradient of
+    a scalar potential $\varphi$, i.e. $\bm E = -\nabla\varphi$. Thus
+    \[
+      \nabla \cdot \bm E = -\nabla\cdot\nabla\varphi = -\nabla^2\varphi = 4\pi\rho.
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Potential flow}
+  \begin{itemize}
+  \item Likewise, potential flow in fluid mechanics can be modelled by this
+    equation.
+  \item Given a velocity field $\bm U$ which is irrotational and incompressible,
+    \[
+      \begin{split}
+        \nabla \times \bm U &= 0 \\
+        \nabla \cdot \bm U &= 0,
+      \end{split}
+    \]
+    it follows that $\bm U = \nabla\varphi$ where $\varphi$ is a scalar velocity
+    potential, which satisfies the Laplace equation
+    \[
+      \nabla^2\varphi = 0.
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Steady heat transfer}
+  Energy transfered out of an arbitrary domain $V$ can be expressed as
+  \[
+    \int_{\partial V} \bm q \cdot \bm n \dif{S} = \int_V f \dif{V}.
+  \]
+  where $\bm q$ is the heat flux, $\bm n$ is the outward surface normal along
+  the boundary $\partial V$ and $f$ represents a volumetric heat source. This
+  basically says that the net energy generation inside the domain must equal the
+  net energy flowing out of the domain.
+  \begin{center}
+    \input{\figs/domain}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Steady heat transfer}
+  \begin{itemize}
+  \item Applying the Gauss' divergence theorem, we can write
+    \[
+      \int_{\partial V} \bm q \cdot \bm n \dif{S}
+      = \int_V \nabla \cdot \bm q \dif{V}
+      = \int_V f \dif{V},
+    \]
+    yielding
+    \[
+      \nabla \cdot \bm q = f.
+    \]
+  \item Applying Fourier's law, i.e. $\bm q = -\kappa \nabla u$, $\kappa > 0$,
+    we get
+    \[
+      - \nabla\cdot\kappa\nabla u = f \qquad \text{ in } \Omega,
+    \]
+    to be solved for the temperature $u$.
+  \item For a constant isotropic heat conductivity $\kappa$, we regain the
+    Poisson equation,
+    \[
+      - \kappa\nabla^2 u = f.
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Unsteady heat transfer}
+  \begin{itemize}
+  \item Unsteady heat transfer is modelled by the heat equation
+    \[
+      \frac{\partial u}{\partial t} = \kappa\nabla^2u + f \qquad \text{ in } \Omega.
+    \]
+  \item Discretizing in time using Backward Euler, we otain
+    \[
+      \frac{1}{\Delta t} (u^{n+1}-u^n) = \kappa\nabla^2u^{n+1}+f^{n+1}
+    \]
+    where superscript $n$ refers to a quanity at time $t^n, n=0,1,\ldots$.
+  \item This can be written as
+    \[
+      \left(-\kappa\nabla^2 + \frac{1}{\Delta t}\right)u^{n+1} = \frac{u^n}{\Delta t}+f^{n+1}.
+    \]
+  \item This is a \emph{Helmholtz} equation: Laplacian plus a multiple of the
+    identity.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solving PDEs on computers}
+  \begin{itemize}
+  \item Typically we can only solve the equation in an approximate sense.
+  \item Computers can only work on finite-dimensional data.
+  \item The process of approximating a continuous equation with a finite
+    dimensional one is called \emph{discretizing} the equation.
+  \item Several ways to do this.
+  \item The most popular ones:
+    \begin{itemize}
+    \item finite differences,
+    \item finite volumes,
+    \item finite elements.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solving PDEs on computers}
+  \begin{itemize}
+  \item This is not a course in discretization of PDEs.
+  \item We will concentrate on the finite difference approach since it is the
+    least technical.
+  \item However, all of them have something in common: At the end of the day you
+    end up with a set of linear equations to solve,
+    \[
+      \bm A \bm u = \bm g
+    \]
+    where $\bm A$ is the matrix of linear equations, $\bm u$ the unknown
+    solution and $\bm g$ the discretized load on the system (the right hand
+    side).
+  \item We will focus mostly on solving the equations, and thus most of what we
+    consider is applicable no matter the discretization approach.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite difference methods}
+  \begin{itemize}
+    \item Consider a continuous function 1D function $u(x)$.
+    \item Introduce a grid, $\left\{x_i\right\}_{i=0}^N$, with $x_i = x_0+ih$.
+    \item Here $h$ is the grid spacing. For simplicity we consider equidistant
+      grids (constant $h$).
+      \begin{center}
+        \scalebox{0.7}{\input{\figs/sampling}}
+      \end{center}
+    \item Want to approximate derivatives of the function only using data on the grid.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite differences}
+  \begin{itemize}
+  \item First idea: How derivatives were introduced in high school:
+    \[
+      u'(x_i) \approx \frac{1}{h} \left( u(x_i+h)-u(x_i) \right).
+    \]
+  \item This is called a one-sided difference (a \emph{forward} difference).
+    Invoking Taylor we find
+    \begin{align*}
+      \frac{1}{h} \left( u(x_i+h)-u(x_i) \right)
+      &= \frac{1}{h} \left( u(x_i) + hu'(x_i) + \mathcal{O}(h^2) - u(x_i) \right) \\
+      &= u'(x_i) + \mathcal{O}(h)
+    \end{align*}
+    In other words, this is a \emph{first order} approximation to $u'(x_i)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite differences}
+  \begin{itemize}
+  \item Second idea: a centered difference
+    \[
+      u'(x_i) \approx \frac{1}{2h} \left( u(x_i + h) - u(x_i - h) \right).
+    \]
+  \item Invoking Taylor we find
+    \[
+      \frac{1}{2h} \left( u(x_i + h) - u(x_i - h) \right)
+      = u'(x_i) + \mathcal{O}(h^2).
+    \]
+    In other words, this is a \emph{second order} approximation to $u'(x_i)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite difference methods}
+  \begin{itemize}
+  \item A centered difference for the second derivative:
+    \begin{align*}
+      u''(x_i) &\approx \frac{1}{h}\left( u'(x_i + \nicefrac{h}{2}) - u'(x_i - \nicefrac{h}{2})\right) \\
+      &\approx \frac{1}{h^2}\left( u(x_i + h) - 2u(x_i) + u(x_i - h) \right)
+    \end{align*}
+  \item Invoking Taylor we find
+    \[
+      \frac{1}{h^2}\left( u(x_i + h) - 2u(x_i) + u(x_i - h) \right)
+      = u''(x_i) + \mathcal{O}(h^2).
+    \]
+    In other words, this is a \emph{second order} approximation to $u''(x_i)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Stencils}
+  Finite differences are often illustrated using \emph{stencils}.
+  \begin{figure}
+    \begin{center}
+      \input{\figs/three-point-stencil-first}
+    \end{center}
+    \caption{Stencil for the first derivative (central difference)}
+  \end{figure}
+  \begin{figure}
+    \begin{center}
+      \input{\figs/three-point-stencil}
+    \end{center}
+    \caption{Stencil for the second derivative}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Discretization in 1D}
+  \begin{itemize}
+  \item We now consider the 1D Poisson problem
+    \[
+      \begin{split}
+        -u_{xx} &= f, \qquad \text{ in } \Omega = (0,1), \\
+        u(0) &= u(1) = 0.
+      \end{split}
+    \]
+    \begin{center}
+      \scalebox{0.7}{\input{\figs/poisson-solution}}
+    \end{center}
+  \item These are called homogenous Dirichlet boundary conditions: the solution
+    is prescribed to be zero on the boundaries of the domain.
+  \item Introduce the grid, $\left\{x_i\right\}_{i=0}^N$, with $x_i = x_0+ih$,
+    $h = \nicefrac{1}{N}$.
+    \begin{center}
+      \input{\figs/finite-difference}
+    \end{center}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discretization in 1D}
+  \begin{itemize}
+  \item Let $u_i$ denote $u(x_i)$ and $f_i$ denote $f(x_i)$.
+  \item Due to the boundary conditions we know that $u_0 = u_N = 0$.
+  \item We thus have $N-1$ unknowns. We collect these in a vector $\bm u$.
+  \item We then apply the second order finite difference formula in each grid
+    point.
+    \begin{align*}
+      - \frac{1}{h^2} \left(u_{i+1} - 2u_i + u_{i-1} \right) &= f_i, \qquad i=1,\ldots,n-1, \\
+      u_0 &= u_N = 0.
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discretization in 1D}
+  These equations can also be expressed as the system
+  \begin{align*}
+    2u_1 - u_2 &= h^2 f_2 \\
+    -u_1 + 2u_2 - u_3 &= h^2 f_3 \\
+               &\vdots \\
+    -u_{N-2} + 2u_{N-1} &= h^2 f_{N-1},
+  \end{align*}
+  or in matrix form
+  \begin{align*}
+    \underbrace{ \begin{pmatrix}
+      2 & -1 & & & \\
+      -1 & 2 & -1 & & \\
+      & & \ddots & & \\
+      & & -1 & 2 & -1 \\
+      & & & -1 & 2
+    \end{pmatrix}
+    }_{\bm A}
+    \underbrace{ \begin{pmatrix}
+      u_1 \\
+      u_2 \\
+      \vdots \\
+      u_{n-2} \\
+      u_{n-1}
+    \end{pmatrix}
+    }_{\bm u}
+    &= h^2
+    \underbrace{ \begin{pmatrix}
+      f_1 \\
+      f_2 \\
+      \vdots \\
+      f_{n-2} \\
+      f_{n-1}
+    \end{pmatrix}
+    }_{\bm f} ,
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discretization in 1D}
+  \begin{itemize}
+  \item The matrix $\bm A$ is sparse (tridiagonal).
+  \item The matrix $\bm A$ is symmetric, that is $\bm A = \bm A^\intercal$.
+  \item The matrix $\bm A$ is positive definite, that is,
+    $\bm v^\intercal \bm A \bm v > 0$
+    for all vectors $\bm v \in \mathbb{R}^{N-1}$, $\bm v \not= \bm 0$.
+  \item Thus, the system of $N-1$ equations is solvable and has a unique
+    solution.
+  \item The error in the grid points is of second order, i.e.
+    $|u(x_i)-u_i| \sim \mathcal{O}(h^2)$.
+  \end{itemize}
+\end{frame}
+
+\input{postamble}
