@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     double end = MPI_Wtime();
     if (rank == 0)
-        printf("Elapsed time: %.2f seconds\n", (end - start));
+        printf("Elapsed time: %.2f seconds\n", end - start);
 
     MPI_Finalize();
     return 0;
