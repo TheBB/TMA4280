@@ -38,16 +38,16 @@
   \frametitle{Variables}
   \begin{itemize}
   \item Unlike e.g. Python, which has \emph{names}, C has genuine variables.
-    That is, each variable associated with a name and a \emph{location}.
+    That is, each variable is associated with a name and a \emph{location}.
   \item Declare a variable by giving it a type and a name:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int my_number, other_number;
   double my_real_number;
   char some_byte;
-    \end{lstlisting}
+\end{lstlisting}
   \item Variables are not initialized. They have whatever value happen to be in
     the memory location when they are declared. \textbf{Do not use uninitialized
-    data.}
+      data.}
   \end{itemize}
 \end{frame}
 
@@ -57,11 +57,11 @@
   \item You can initialize and declare a variable at the same time. It's good to
     get into the habit of doing this so you never accidentally use an
     uninitialized variable.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int my_number = 42;
   double my_real_number = 3.14;
   char some_byte = long_expression();
-    \end{lstlisting}
+\end{lstlisting}
   \item Compile your code with \texttt{-Wuninitialized} to get warnings when you
     appear to be using uninitialized variables.
   \end{itemize}
@@ -88,11 +88,11 @@
     signed int can (for example) take values in $[-2^{31}, 2^{31})$ while an
     unsigned one can take values in $[0,2^{32})$.
   \item The following code will, on most computers, print ``$200, -56$''.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   unsigned char a = 200;
   signed char b = 200;
   printf("%d, %d\n", a, b);
-    \end{lstlisting}
+\end{lstlisting}
   \item Signed is implied if not otherwise specified.
   \end{itemize}
 \end{frame}
@@ -106,12 +106,12 @@
     are at least 64 bits.
   \item These qualifiers can be mixed with signed or unsigned. The typename
     \texttt{int} can also be omitted. These four variables have identical types:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   long a;
   signed long b;
   long int c;
   signed long int d;
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -145,18 +145,18 @@
   \frametitle{Arrays}
   \begin{itemize}
   \item Arrays can be declared and initialized
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int cat[4];  // Uninitialized
   int cat[4] = {1, 2, 3, 4};
   int cat[] = {1, 2, 3, 4};
   int cat[];  // Error
-    \end{lstlisting}
+\end{lstlisting}
   \item Since C99, the array size may be known only at runtime. This is an error
     in ANSI C:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int size = 4;
   int cat[size];  // Uninitialized
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -168,13 +168,13 @@
   \item For this reason, you can only leave the first dimension unspecified.
     Otherwise the compiler doesn't know how to compute the memory location of an
     array element from its index.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int cat[4][4];
   int cat[4][4] = { { ... }, { ... }, ... };
   int cat[][4] = { { ... }, { ... }, ... };
   int cat[][] = ...;  // Error
   int cat[][4];  // Error
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -183,19 +183,19 @@
   \begin{itemize}
   \item Pointers are memory addresses. Encoded in the type of a pointer is also
     the type of the thing it points to.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int *a;  // Pointer to int
   double *b;  // Pointer to double
   float **c;  // Pointer to pointer to float
-    \end{lstlisting}
+\end{lstlisting}
   \item To get the value that a pointer points to, use dereferencing with
     \texttt{*}. To get the address of a variable, use \texttt{\&}:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int a = 10;
   int *b = &a;
   printf("b points to the value %d\n", *b);
   printf("a has address %x\n", &a);
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -237,19 +237,19 @@
   \begin{itemize}
   \item Pointers are unsigned integers and can be subject to arithmetic.
   \item The math is always in terms of the underlying type.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int a = 10;
   int *b = &a + 1;
-    \end{lstlisting}
+\end{lstlisting}
     The pointer \texttt{b} now points to a memory location \emph{four bytes}
     offset from where \texttt{a} is stored (if ints are four bytes).
   \item Therefore we can use pointers as a form of arrays.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int *ptr = ...;
   *ptr;        // First element
   *(ptr + 1);  // Second element
   *(ptr + 2);  // Third element
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -260,6 +260,8 @@
     pointers.
   \item If \texttt{p} has a pointer type then \texttt{p[n]} is
     \emph{exactly equivalent} to \texttt{*(p+n)}.
+  \item Interestingly, since \texttt{p+n} is the same as \texttt{n+p}, you can
+    also use \texttt{n[p]}.
   \item This has caused a lot of confusion about the difference between pointers
     and arrays.
   \end{itemize}
@@ -267,11 +269,11 @@
 
 \begin{frame}[fragile]
   \frametitle{Pointers as arrays (1D)}
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int *ptr;
   int arr[];
   ptr[5]; arr[5];
-    \end{lstlisting}
+\end{lstlisting}
   \begin{itemize}
   \item For \emph{one-dimensional} arrays, array indexing and pointer indexing
     work pretty much exactly the same way.
@@ -285,11 +287,11 @@
 
 \begin{frame}[fragile]
   \frametitle{Pointers as arrays (1D)}
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int **ptr;
   int arr[][8];
   ptr[5][3]; arr[5][3];
-    \end{lstlisting}
+\end{lstlisting}
   \begin{itemize}
   \item For \emph{multi-dimensional} arrays, they are very different things.
   \item Array: get the element at offset $5\times8 + 3 = 43$ from the start.
@@ -307,10 +309,10 @@
   \item C notably does not have a boolean type.
   \item Instead it uses integers. Anything that is not zero is true.
   \item Pitfall:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   unsigned char b = 256;
   if (b) { ... };
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -332,7 +334,7 @@
   \frametitle{Structs}
   \begin{itemize}
   \item A struct is a handy way of grouping variables together.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   struct person {
     int age;
     char *name, *address;
@@ -342,7 +344,7 @@
   struct person me;
   me.name = "Eivind Fonn";
   me.age = 31;
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -351,15 +353,15 @@
   \begin{itemize}
   \item We often find ourselves with pointers to structs.
   \item This is ugly:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   struct person *me;
   (*me).age;
-    \end{lstlisting}
+\end{lstlisting}
   \item Instead, use \texttt{->} as a shortcut.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   struct person *me;
   me->age;
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -367,13 +369,13 @@
   \frametitle{Functions}
   \begin{itemize}
   \item Look very similar to functions in other C-like languages.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   <rtype> <name>(<arguments>)
   {
     <code>
     return <expr>;
   }
-    \end{lstlisting}
+\end{lstlisting}
   \item Arguments are always passed by value. If you want to pass by reference,
     to modify the arguments in a way that is visible to the caller, you must use
     pointers.
@@ -384,7 +386,7 @@
 \begin{frame}[fragile]
   \frametitle{Functions}
   For example:
-  \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int sum(int a, int b) {
     return a + b;
   }
@@ -397,7 +399,7 @@
     *sum = a + b;
     *product = a * b;
   }
-  \end{lstlisting}
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -406,10 +408,10 @@
   \item A function must be \emph{declared} before it is \emph{used} in a source
     code file. The declaration includes all information the compiler needs to
     use the function:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
     int sum(int a, int b);
     int sum(int, int);
-    \end{lstlisting}
+\end{lstlisting}
   \item As long as you have provided a \emph{definition} when the program is
     linked, it's okay.
   \item This lets us split up code into different source code files, so long as
@@ -421,7 +423,7 @@
 
 \begin{frame}[fragile]
   \frametitle{Arrays, pointers and functions}
-  \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   void fncA(int *a);
   void fncB(int b[]);  // Equivalent to fncA
 
@@ -435,7 +437,67 @@
   int arr_2d[10][8];
   fncC(arr_2d);  // Not OK
   fncD(arr_2d); fncE(arr_2d);  // OK
-  \end{lstlisting}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Function pointers}
+  \begin{itemize}
+  \item You can store a pointer to a function.
+  \item This declares \texttt{func\_ptr} as a pointer to a function that accepts
+    a char and a pointer to a double, and returns an int. Then it sets this
+    pointer to the address of the function \texttt{actual\_func}.
+\begin{lstlisting}[style=c]
+  int (*func_ptr)(char, double*) = &actual_func;
+\end{lstlisting}
+  \item You can call a function pointer by dereferencing it.
+\begin{lstlisting}[style=c]
+  int value = (*func_ptr)('a', &some_double);
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Typedefs}
+  \begin{itemize}
+  \item C types can be famously complicated to figure out.
+\begin{lstlisting}[style=c]
+  void (*f)(int,void (*)());
+  int **(*f)(int**,int**(*)(int**,int**));
+  char (*(*X[3])())[5];
+\end{lstlisting}
+  \item Helpful tool: cdecl
+\begin{lstlisting}
+  cdecl> explain void (*f)(int,void(*)())
+  declare f as pointer to function
+  (int, pointer to function returning void)
+  returning void
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Typedefs}
+  \begin{itemize}
+  \item Better technique: declare type aliases with \texttt{typedef}.
+  \item Very useful for structs so you don't have to type \texttt{struct person}
+    every time.
+\begin{lstlisting}[style=c]
+  typedef struct person person_t;
+\end{lstlisting}
+  \item You can typedef together with the declaration too.
+\begin{lstlisting}[style=c]
+  typedef struct {
+    int age;
+    char *name, *address;
+    double height, weight;
+  } person_t;
+\end{lstlisting}
+  \item Also useful for types that will always be pointers.
+\begin{lstlisting}[style=c]
+  typedef person_t* personPtr;
+\end{lstlisting}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -447,11 +509,11 @@
     indicate that the function will not change the data it points to.
   \item The latter allows compiler optimization, so use it when possible!
   \item Easy to get confused, though:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   int const *ptr;  // *ptr is constant
   int * const ptr;  // ptr is constant
   int const * const ptr;  // both
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -461,17 +523,17 @@
   \item You can use \texttt{\#define} to define symbolic constants. These are
     substituted textually before compilation, so they're effectively the same as
     writing a literal value in your program:
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   #define PI 3.141516;
   return r * PI * PI;
 
   // turns into
   return r * 3.141516 * 3.141516;
-    \end{lstlisting}
+\end{lstlisting}
   \item Note that they are not variables, not even const variables.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   &PI;  // Error
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
@@ -501,7 +563,7 @@
   \item Store multidimensional arrays contiguously. This lets us use BLAS. If
     you \texttt{malloc} inside a loop you may be doing it wrong. You can
     construct an array of pointers afterwards, if you like.
-    \begin{lstlisting}[style=c]
+\begin{lstlisting}[style=c]
   double *data =
     malloc(M * N * sizeof(double));
   double *matrix[N];
@@ -510,7 +572,7 @@
     // or
     matrix[i] = data + i*M;
   }
-    \end{lstlisting}
+\end{lstlisting}
   \end{itemize}
 \end{frame}
 
