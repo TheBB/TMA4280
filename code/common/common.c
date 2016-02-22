@@ -67,21 +67,14 @@ Vector createVector(int len)
 }
 
 #ifdef HAVE_MPI
-Vector createVectorMPI(int glob_len, MPI_Comm* comm, int allocdata, int pad)
+Vector createVectorMPI(int glob_len, MPI_Comm* comm, int allocdata)
 {
-  int padadd=2;
   Vector result = (Vector)calloc(1, sizeof(vector_t));
   result->comm = comm;
   MPI_Comm_size(*comm, &result->comm_size);
   MPI_Comm_rank(*comm, &result->comm_rank);
   splitVector(glob_len, result->comm_size, &result->sizes, &result->displ);
-  if (result->comm_rank == 0)
-    padadd--;
-  if (result->comm_rank == result->comm_size-1)
-    padadd--;
-  if (!pad)
-    padadd = 0;
-  result->len = result->sizes[result->comm_rank]+padadd;
+  result->len = result->sizes[result->comm_rank];
   if (allocdata)
     result->data = calloc(result->len, sizeof(double));
   else
@@ -155,7 +148,7 @@ Matrix createMatrixMPI(int n1, int n2, int N1, int N2, MPI_Comm* comm)
   int i, n12;
 
   Matrix result = (Matrix)calloc(1, sizeof(matrix_t));
-  result->as_vec = createVectorMPI(N1*N2, comm, 0, 0);
+  result->as_vec = createVectorMPI(N1*N2, comm, 0);
   n12 = n1;
   if (n1 == -1)
     n1 = result->as_vec->len/N2;
@@ -174,17 +167,17 @@ Matrix createMatrixMPI(int n1, int n2, int N1, int N2, MPI_Comm* comm)
   result->col = malloc(n2*sizeof(Vector));
   for (i=0;i<n2;++i) {
     if (n12 == N1)
-      result->col[i] = createVectorMPI(N1, &SelfComm, 0, 0);
+      result->col[i] = createVectorMPI(N1, &SelfComm, 0);
     else
-      result->col[i] = createVectorMPI(N1, comm, 0, 0);
+      result->col[i] = createVectorMPI(N1, comm, 0);
     result->col[i]->data = result->data[i];
   }
   result->row = malloc(n1*sizeof(Vector));
   for (i=0;i<n1;++i) {
     if (n12 == N1)
-      result->row[i] = createVectorMPI(N2, comm, 0, 0);
+      result->row[i] = createVectorMPI(N2, comm, 0);
     else
-      result->row[i] = createVectorMPI(N2, &SelfComm, 0, 0);
+      result->row[i] = createVectorMPI(N2, &SelfComm, 0);
     result->row[i]->data = result->data[0]+i;
     result->row[i]->stride = n1;
   }
@@ -228,7 +221,7 @@ Matrix createMatrixMPICart(int N1, int N2, MPI_Comm* comm, int pad)
 
   // allocate data
   Matrix result = (Matrix)calloc(1, sizeof(matrix_t));
-  result->as_vec = createVectorMPI(N1*N2, comm, 0, 0);
+  result->as_vec = createVectorMPI(N1*N2, comm, 0);
   result->rows = split[1][coords[1]]+pads[1];
   result->cols = split[0][coords[0]]+pads[0];
   result->as_vec->len = result->rows*result->cols;
@@ -243,7 +236,7 @@ Matrix createMatrixMPICart(int N1, int N2, MPI_Comm* comm, int pad)
   // allocate column vectors
   result->col = calloc(result->cols,sizeof(Vector));
   for (i=0;i<result->cols;++i) {
-    result->col[i] = createVectorMPI(N1,comm, 0, 0);
+    result->col[i] = createVectorMPI(N1,comm, 0);
     result->col[i]->data = result->data[i];
     result->col[i]->len = result->rows;
     result->col[i]->stride = 1;
@@ -257,7 +250,7 @@ Matrix createMatrixMPICart(int N1, int N2, MPI_Comm* comm, int pad)
   // allocate row vectors
   result->row = calloc(result->rows,sizeof(Vector));
   for (i=0;i<result->rows;++i) {
-    result->row[i] = createVectorMPI(N2,comm, 0, 0);
+    result->row[i] = createVectorMPI(N2,comm, 0);
     result->row[i]->data = result->data[0]+i;
     result->row[i]->stride = result->rows;
     result->row[i]->len = result->cols;

@@ -78,7 +78,7 @@ Vector createVector(int len);
 //! \param allocdata If 0, no data is allocated to vector
 //! \param pad Whether or not to pad vector with space at ends
 //! \return The new vector
-Vector createVectorMPI(int globLen, MPI_Comm* comm, int allocdata, int pad);
+Vector createVectorMPI(int globLen, MPI_Comm* comm, int allocdata);
 #endif
 
 //! \brief Free up memory allocated to a vector
