@@ -1,0 +1,636 @@
+\input{preamble}
+
+\title{The Common library}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}[fragile]
+  \frametitle{How to build}
+  Easiest to use CMake.
+\begin{lstlisting}
+  add_subdirectory(../common common)
+  list(APPEND CMAKE_C_FLAGS ${COMMON_C_FLAGS})
+  include_directories(${COMMON_INCLUDE_PATHS})
+  target_link_libraries(myprog ${COMMON_LIBRARIES})
+\end{lstlisting}
+%$
+  See the \texttt{sum} example for how this is done.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Initializing}
+\begin{lstlisting}[style=c]
+  void init_app(int argc, char **argv,
+                int *rank, int *size);
+\end{lstlisting}
+  Takes care of initializing MPI if necessary, and asking about the MPI
+  threading level. You should call this instead of \texttt{MPI\_Init},
+  \texttt{MPI\_Comm\_size} and \texttt{MPI\_Comm\_rank}, because the common
+  library also needs to know these things.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector}
+\begin{lstlisting}[style=c]
+  typedef struct {
+    double* data;
+    int len;
+    int glob_len;
+    int stride;
+    MPI_Comm* comm;
+    int comm_size;
+    int comm_rank;
+    int* displ;
+    int* sizes;
+  } vector_t;
+
+  typedef vector_t* Vector;
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector}
+  \begin{itemize}
+  \item \texttt{data} is a pointer to the contiguous vector data.
+  \item \texttt{len} is the local length of the vector (how many elements are
+    stored in \texttt{data}).
+  \item \texttt{glob\_len} is the global length of the vector (over all
+    processes).
+  \item \texttt{stride} is the distance between each element in memory.
+  \item \texttt{comm} is the MPI communicator across which the vector is split
+    (if applicable).
+  \item \texttt{comm\_size} and \texttt{comm\_rank} store the number of
+    processors and the rank of this process.
+  \item \texttt{displ} and \texttt{sizes} store the offset and sizes of each
+    part of the vector.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Making vectors}
+\begin{lstlisting}[style=c]
+  Vector createVector(int len);
+\end{lstlisting}
+  Creates a serial vector. That means
+  \begin{itemize}
+  \item \texttt{len == glob\_len}
+  \item \texttt{stride == 1}
+  \item \texttt{comm == displ == sizes == NULL}
+  \item \texttt{comm\_size == 1}
+  \item \texttt{comm\_rank == 0}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Making vectors}
+\begin{lstlisting}[style=c]
+  Vector createVectorMPI(int glob_len, MPI_Comm *,
+                         int allocdata, int pad);
+\end{lstlisting}
+  \begin{itemize}
+  \item Creates a parallel vector. It is ``automagically'' split between the
+    processes in the communicator, and the \texttt{displ} and \texttt{sizes}
+    attributes should reflect this. \texttt{len} may not be equal to
+    \texttt{glob\_len}, but \texttt{stride} is still equal to one.
+  \item \texttt{allocdata = 0} will not allocate the data itself.
+  \item \texttt{pad = 1} will pad the vector with an additional element at the
+    beginning and the end, except at the ``boundary'' processes. Useful for
+    tridiagonal matrix-vector products.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Matrix}
+\begin{lstlisting}[style=c]
+  typedef struct {
+    double** data;
+    Vector as_vec;
+    Vector* col;
+    Vector* row;
+    int rows;
+    int cols;
+    int glob_rows;
+    int glob_cols;
+  } matrix_t;
+
+  typedef matrix_t* Matrix;
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Matrix}
+  \begin{itemize}
+  \item \texttt{}
+  \item \texttt{data} is a pointer to the contiguous vector data.
+  \item \texttt{len} is the local length of the vector (how many elements are
+    stored in \texttt{data}).
+  \item \texttt{glob\_len} is the global length of the vector (over all
+    processes).
+  \item \texttt{stride} is the distance between each element in memory.
+  \item \texttt{comm} is the MPI communicator across which the vector is split
+    (if applicable).
+  \item \texttt{comm\_size} and \texttt{comm\_rank} store the number of
+    processors and the rank of this process.
+  \item \texttt{displ} and \texttt{sizes} store the offset and sizes of each
+    part of the vector.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Types}
+  \begin{itemize}
+  \item Ints and chars optionally can be \emph{signed} or \emph{unsigned}. A
+    signed int can (for example) take values in $[-2^{31}, 2^{31})$ while an
+    unsigned one can take values in $[0,2^{32})$.
+  \item The following code will, on most computers, print ``$200, -56$''.
+\begin{lstlisting}[style=c]
+  unsigned char a = 200;
+  signed char b = 200;
+  printf("%d, %d\n", a, b);
+\end{lstlisting}
+  \item Signed is implied if not otherwise specified.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Types}
+  \begin{itemize}
+  \item Ints can additionally be either short, normal, long or long long.
+  \item Their lengths are guaranteed to be non-decreasing. Shorts and normal
+    ints are at least 16 bits, long ints are at least 32 bits and long long ints
+    are at least 64 bits.
+  \item These qualifiers can be mixed with signed or unsigned. The typename
+    \texttt{int} can also be omitted. These four variables have identical types:
+\begin{lstlisting}[style=c]
+  long a;
+  signed long b;
+  long int c;
+  signed long int d;
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other types}
+  \begin{itemize}
+  \item \texttt{size\_t} is an unsigned integer type used for \emph{sizes} of
+    things in memory. For example, \texttt{malloc} expects a \texttt{size\_t}
+    parameter.
+  \item \texttt{ptrdiff\_t} is a signed integer type used for differences
+    between memory locations.
+  \item Both of these are useful for indexing arrays. Where only nonnegative
+    indices are expected (which is almost always the case), I prefer
+    \texttt{size\_t}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other types}
+  Other types with predictable and portable sizes were introduced in C99: Here,
+  \texttt{N} can be $8$, $16$, $32$ or $64$.
+  \begin{itemize}
+  \item \texttt{[u]intN\_t}: integer type with exact width.
+  \item \texttt{[u]int\_leastN\_t}: integer type with at least a given width.
+  \item \texttt{[u]int\_fastN\_t}: the \emph{fastest} type on the given machine
+    with at least a given width.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Arrays}
+  \begin{itemize}
+  \item Arrays can be declared and initialized
+\begin{lstlisting}[style=c]
+  int cat[4];  // Uninitialized
+  int cat[4] = {1, 2, 3, 4};
+  int cat[] = {1, 2, 3, 4};
+  int cat[];  // Error
+\end{lstlisting}
+  \item Since C99, the array size may be known only at runtime. This is an error
+    in ANSI C:
+\begin{lstlisting}[style=c]
+  int size = 4;
+  int cat[size];  // Uninitialized
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Arrays}
+  \begin{itemize}
+  \item Multidimensional arrays are stored contiguously in memory, in row-major
+    order.
+  \item For this reason, you can only leave the first dimension unspecified.
+    Otherwise the compiler doesn't know how to compute the memory location of an
+    array element from its index.
+\begin{lstlisting}[style=c]
+  int cat[4][4];
+  int cat[4][4] = { { ... }, { ... }, ... };
+  int cat[][4] = { { ... }, { ... }, ... };
+  int cat[][] = ...;  // Error
+  int cat[][4];  // Error
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pointers}
+  \begin{itemize}
+  \item Pointers are memory addresses. Encoded in the type of a pointer is also
+    the type of the thing it points to.
+\begin{lstlisting}[style=c]
+  int *a;  // Pointer to int
+  double *b;  // Pointer to double
+  float **c;  // Pointer to pointer to float
+\end{lstlisting}
+  \item To get the value that a pointer points to, use dereferencing with
+    \texttt{*}. To get the address of a variable, use \texttt{\&}:
+\begin{lstlisting}[style=c]
+  int a = 10;
+  int *b = &a;
+  printf("b points to the value %d\n", *b);
+  printf("a has address %x\n", &a);
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pointers}
+  \begin{itemize}
+  \item It is easy to confuse the \texttt{*} in the declaration and the
+    dereferencing operator.
+  \item Helpful way of thinking: \texttt{int *a;} declares \texttt{*a} as an
+    \texttt{int}. This is why C people like to put the \texttt{*} next to the
+    variable name instead of the type.
+  \item \textbf{Note:} this is just a mnemonic device. It does not actually
+    declare an int.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pointers}
+  \begin{itemize}
+  \item The warning about not using uninitialized memory is extremely important
+    for pointers.
+  \item There is no guarantee that an uninitialized pointer points to
+    somewhere that makes sense, or is even a legal memory location.
+  \item Dereferencing such a pointer may cause your program to crash
+    (segmentation violation).
+  \item It is common to use \texttt{0} or \texttt{NULL} as a value to indicate
+    an illegal pointer.
+  \item Functions that return pointers may use \texttt{NULL} to indicate an
+    error.
+  \item Functions that accept pointer arguments may interpret \texttt{NULL} as
+    the absence of a value.
+  \item \textbf{Be careful!} The only correct answer is also a bad one: check
+    every pointer everywhere.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pointers as arrays}
+  \begin{itemize}
+  \item Pointers are unsigned integers and can be subject to arithmetic.
+  \item The math is always in terms of the underlying type.
+\begin{lstlisting}[style=c]
+  int a = 10;
+  int *b = &a + 1;
+\end{lstlisting}
+    The pointer \texttt{b} now points to a memory location \emph{four bytes}
+    offset from where \texttt{a} is stored (if ints are four bytes).
+  \item Therefore we can use pointers as a form of arrays.
+\begin{lstlisting}[style=c]
+  int *ptr = ...;
+  *ptr;        // First element
+  *(ptr + 1);  // Second element
+  *(ptr + 2);  // Third element
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pointers as arrays}
+  \begin{itemize}
+  \item This is so useful that C allows us to use \texttt{[]}-indexing on
+    pointers.
+  \item If \texttt{p} has a pointer type then \texttt{p[n]} is
+    \emph{exactly equivalent} to \texttt{*(p+n)}.
+  \item Interestingly, since \texttt{p+n} is the same as \texttt{n+p}, you can
+    also use \texttt{n[p]}.
+  \item This has caused a lot of confusion about the difference between pointers
+    and arrays.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pointers as arrays (1D)}
+\begin{lstlisting}[style=c]
+  int *ptr;
+  int arr[];
+  ptr[5]; arr[5];
+\end{lstlisting}
+  \begin{itemize}
+  \item For \emph{one-dimensional} arrays, array indexing and pointer indexing
+    work pretty much exactly the same way.
+  \item Array indexing may be slightly faster since it involves less redirection
+    (For arrays, the program gets ``for free'' the location of the first
+    element. In the pointer case, the location of the first element is something
+    that's stored in a variable which has to be looked up.)
+  \item When passed to a function, \textbf{arrays become pointers}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pointers as arrays (1D)}
+\begin{lstlisting}[style=c]
+  int **ptr;
+  int arr[][8];
+  ptr[5][3]; arr[5][3];
+\end{lstlisting}
+  \begin{itemize}
+  \item For \emph{multi-dimensional} arrays, they are very different things.
+  \item Array: get the element at offset $5\times8 + 3 = 43$ from the start.
+  \item Pointer: Follow the pointer, go to offset $5$, follow \emph{that}
+    pointer, go to offset $3$.
+  \item When passing a multi-dimensional array to a function, only the ``top''
+    layer becomes a pointer. The other layers of redirection can't be
+    automatically created.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Strings}
+  \begin{itemize}
+  \item C notably does not have a boolean type.
+  \item Instead it uses integers. Anything that is not zero is true.
+  \item Pitfall:
+\begin{lstlisting}[style=c]
+  unsigned char b = 256;
+  if (b) { ... };
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Strings}
+  \begin{itemize}
+  \item Also notably, C does not have a string type.
+  \item Instead, we use pointers to chars.
+  \item A C string implicitly keeps going until a zero byte is found. This byte
+    is not part of the string but it is part of the allocated memory for it.
+  \item The meaning of the \texttt{char **argv} argument to \texttt{main} is
+    then to be understood as an ``array'' of ``strings''.
+  \item \texttt{strcmp} compares two strings. It returns zero if they are equal.
+    Therefore it should be negated in an \texttt{if}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Structs}
+  \begin{itemize}
+  \item A struct is a handy way of grouping variables together.
+\begin{lstlisting}[style=c]
+  struct person {
+    int age;
+    char *name, *address;
+    double height, weight;
+  };
+
+  struct person me;
+  me.name = "Eivind Fonn";
+  me.age = 31;
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Structs}
+  \begin{itemize}
+  \item We often find ourselves with pointers to structs.
+  \item This is ugly:
+\begin{lstlisting}[style=c]
+  struct person *me;
+  (*me).age;
+\end{lstlisting}
+  \item Instead, use \texttt{->} as a shortcut.
+\begin{lstlisting}[style=c]
+  struct person *me;
+  me->age;
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Functions}
+  \begin{itemize}
+  \item Look very similar to functions in other C-like languages.
+\begin{lstlisting}[style=c]
+  <rtype> <name>(<arguments>)
+  {
+    <code>
+    return <expr>;
+  }
+\end{lstlisting}
+  \item Arguments are always passed by value. If you want to pass by reference,
+    to modify the arguments in a way that is visible to the caller, you must use
+    pointers.
+  \item This is a handy way to return more than one value.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Functions}
+  For example:
+\begin{lstlisting}[style=c]
+  int sum(int a, int b) {
+    return a + b;
+  }
+  int product(int a, int b) {
+    return a * b;
+  }
+  void sum_and_product(int a, int b,
+                       int *sum, int *product)
+  {
+    *sum = a + b;
+    *product = a * b;
+  }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Functions}
+  \begin{itemize}
+  \item A function must be \emph{declared} before it is \emph{used} in a source
+    code file. The declaration includes all information the compiler needs to
+    use the function:
+\begin{lstlisting}[style=c]
+    int sum(int a, int b);
+    int sum(int, int);
+\end{lstlisting}
+  \item As long as you have provided a \emph{definition} when the program is
+    linked, it's okay.
+  \item This lets us split up code into different source code files, so long as
+    we keep the declarations separate (in header files).
+  \item When you \texttt{\#include} files, you're importing a bunch of function
+    declarations.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Arrays, pointers and functions}
+\begin{lstlisting}[style=c]
+  void fncA(int *a);
+  void fncB(int b[]);  // Equivalent to fncA
+
+  void fncC(int **c);
+  void fncD(int d[][8]);  // NOT equivalent to fncC
+  void fncE(int (*e)[8]);  // Equivalent to fncD
+
+  int arr_1d[10];
+  fncA(arr_1d); fncB(arr_1d);  // OK
+
+  int arr_2d[10][8];
+  fncC(arr_2d);  // Not OK
+  fncD(arr_2d); fncE(arr_2d);  // OK
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Function pointers}
+  \begin{itemize}
+  \item You can store a pointer to a function.
+  \item This declares \texttt{func\_ptr} as a pointer to a function that accepts
+    a char and a pointer to a double, and returns an int. Then it sets this
+    pointer to the address of the function \texttt{actual\_func}.
+\begin{lstlisting}[style=c]
+  int (*func_ptr)(char, double*) = &actual_func;
+\end{lstlisting}
+  \item You can call a function pointer by dereferencing it.
+\begin{lstlisting}[style=c]
+  int value = (*func_ptr)('a', &some_double);
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Typedefs}
+  \begin{itemize}
+  \item C types can be famously complicated to figure out.
+\begin{lstlisting}[style=c]
+  void (*f)(int,void (*)());
+  int **(*f)(int**,int**(*)(int**,int**));
+  char (*(*X[3])())[5];
+\end{lstlisting}
+  \item Helpful tool: cdecl
+\begin{lstlisting}
+  cdecl> explain void (*f)(int,void(*)())
+  declare f as pointer to function
+  (int, pointer to function returning void)
+  returning void
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Typedefs}
+  \begin{itemize}
+  \item Better technique: declare type aliases with \texttt{typedef}.
+  \item Very useful for structs so you don't have to type \texttt{struct person}
+    every time.
+\begin{lstlisting}[style=c]
+  typedef struct person person_t;
+\end{lstlisting}
+  \item You can typedef together with the declaration too.
+\begin{lstlisting}[style=c]
+  typedef struct {
+    int age;
+    char *name, *address;
+    double height, weight;
+  } person_t;
+\end{lstlisting}
+  \item Also useful for types that will always be pointers.
+\begin{lstlisting}[style=c]
+  typedef person_t* personPtr;
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Constants}
+  \begin{itemize}
+  \item A variable can be declared \texttt{const} to indicate that its value
+    will not change.
+  \item In function arguments, \texttt{const} can be used with pointers to
+    indicate that the function will not change the data it points to.
+  \item The latter allows compiler optimization, so use it when possible!
+  \item Easy to get confused, though:
+\begin{lstlisting}[style=c]
+  int const *ptr;  // *ptr is constant
+  int * const ptr;  // ptr is constant
+  int const * const ptr;  // both
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Preprocessor directives}
+  \begin{itemize}
+  \item You can use \texttt{\#define} to define symbolic constants. These are
+    substituted textually before compilation, so they're effectively the same as
+    writing a literal value in your program:
+\begin{lstlisting}[style=c]
+  #define PI 3.141516;
+  return r * PI * PI;
+
+  // turns into
+  return r * 3.141516 * 3.141516;
+\end{lstlisting}
+  \item Note that they are not variables, not even const variables.
+\begin{lstlisting}[style=c]
+  &PI;  // Error
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Miscellaneous tips}
+  \begin{itemize}
+  \item \texttt{malloc} and \texttt{calloc} allocate memory and return pointers.
+    The latter zeroes the allocated memory, which makes it safer but also
+    slower.
+  \item \texttt{sizeof} is a compile-time macro for getting the size of a type.
+    It is useful together with \texttt{malloc} and \texttt{calloc}.
+  \item If you allocate memory but ``lose'' the pointer to it, that memory
+    cannot be used by anything else until your program exits. Use \texttt{free}
+    to release memory you don't need any more.
+  \item Use \texttt{atoi} and \texttt{atof} to convert strings (e.g.
+    command-line arguments) to integers or doubles.
+  \item Use \texttt{printf} to convert to string (and output).
+  \item Use casting for other automatic conversions: \texttt{(double)some\_int}.
+  \item Just because it's easy to mess up in C doesn't mean you should litter
+    your program with safety checks. We're not NASA.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Miscellaneous tips}
+  \begin{itemize}
+  \item Store multidimensional arrays contiguously. This lets us use BLAS. If
+    you \texttt{malloc} inside a loop you may be doing it wrong. You can
+    construct an array of pointers afterwards, if you like.
+\begin{lstlisting}[style=c]
+  double *data =
+    malloc(M * N * sizeof(double));
+  double *matrix[N];
+  for (size_t i = 0; i < N; i++) {
+    matrix[i] = &data[i*M];
+    // or
+    matrix[i] = data + i*M;
+  }
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\input{postamble}

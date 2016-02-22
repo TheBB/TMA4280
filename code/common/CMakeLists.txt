@@ -31,7 +31,7 @@ endif()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-if(BLAS_VENDOR MATCHES "Intel")
+if(BLA_VENDOR MATCHES "Intel")
   list(APPEND COMMON_DEFINITIONS -DUSE_MKL)
 endif()
 

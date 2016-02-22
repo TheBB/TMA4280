@@ -79,6 +79,8 @@ Vector createVectorMPI(int glob_len, MPI_Comm* comm, int allocdata, int pad)
     padadd--;
   if (result->comm_rank == result->comm_size-1)
     padadd--;
+  if (!pad)
+    padadd = 0;
   result->len = result->sizes[result->comm_rank]+padadd;
   if (allocdata)
     result->data = calloc(result->len, sizeof(double));
