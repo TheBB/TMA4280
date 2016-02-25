@@ -29,8 +29,25 @@
   \item This makes it fast and powerful, but not expressive, and not often not
     very convenient.
   \item More so than other languages, C will do what you tell it to, and if you
-    screw it up it's your own fault.
+    screw it up it's your own fault. This gives the programmer a lot of power
+    not easily available in other languages.
   \item C has \emph{no automatic memory management}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Strengths and weaknesses}
+  \begin{itemize}
+  \item C is extremely portable. There are C compilers available for almost
+    every architecture.
+  \item C's calling convention is standardized. This makes it very easy for
+    other languages to call C libraries, and this makes C code even more
+    portable.
+  \item Almost every modern language ships with an FFI
+    (\emph{Foreign Function Interface}) that can call C functions. This gives
+    them immediate access to popular libraries (BLAS\ldots).
+  \item Most dynamic programming languages (Python, Ruby, Lua\ldots) are written
+    in C and allow extension modules written in C (e.g. Numpy).
   \end{itemize}
 \end{frame}
 
@@ -138,6 +155,26 @@
   \item \texttt{[u]int\_leastN\_t}: integer type with at least a given width.
   \item \texttt{[u]int\_fastN\_t}: the \emph{fastest} type on the given machine
     with at least a given width.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Arithmetic}
+  \begin{itemize}
+  \item For both signed and unsigned integers, arithmetic in C may overflow
+    without warning if the result is too big or too small.
+  \item Mathematics works modulo $2^n$ where $n$ is the size of the type in
+    question.
+  \item The usual rules of precedence apply to \texttt{+}, \texttt{-},
+    \texttt{*} and \texttt{/}. Associativity is to the left. Therefore,
+\begin{lstlisting}[style=c]
+  arr[i] = 1.0 / ((i+1) * (i+1));
+\end{lstlisting}
+    is better written as
+\begin{lstlisting}[style=c]
+  arr[i] = 1.0 / (i+1) / (i+1);
+\end{lstlisting}
+    This also avoids overflow!
   \end{itemize}
 \end{frame}
 
@@ -304,7 +341,7 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Strings}
+  \frametitle{Booleans}
   \begin{itemize}
   \item C notably does not have a boolean type.
   \item Instead it uses integers. Anything that is not zero is true.
@@ -363,6 +400,40 @@
   me->age;
 \end{lstlisting}
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Scope}
+  \begin{itemize}
+  \item Each variable has a \emph{scope} in which it lives.
+  \item In C, a variable is scoped to the closest surrounding block of braces:
+    \texttt{\{} and \texttt{\}}. When that block ends, the variable dies.
+  \item Pointers are destroyed but the pointed-to values are not!
+  \item C is lexically scoped: a symbol may refer to a variable in this scope or
+    any parent scope. Parent scopes are determined according to code
+    \emph{as written} and not as functions are \emph{called}. That means a
+    called function can't access variables in the scope of the caller. (Yes,
+    such languages exist.)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Scope and MPI}
+  This has interesting consequences when writing MPI code. The following will
+  not work:
+\begin{lstlisting}[style=c]
+  if (rank == 0) {
+    // This variable is only needed on proc 0
+    int something;
+  }
+
+  // Code that needs to run everywhere
+
+  if (rank == 0) {
+    // Error!
+    something = ...;
+  }
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -533,6 +604,90 @@
   \item Note that they are not variables, not even const variables.
 \begin{lstlisting}[style=c]
   &PI;  // Error
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Preprocessor directives}
+  \begin{itemize}
+  \item You can use \texttt{\#define} in a more general sense for macros:
+\begin{lstlisting}[style=c]
+  #define max(a,b) a > b ? a : b
+  return max(x, 0);
+
+  // turns into
+  return x > 0 ? x : 0;
+\end{lstlisting}
+  \item Beware:
+\begin{lstlisting}[style=c]
+  #define prod(a,b) a * b
+  return prod(x + y, r + s)
+
+  // turns into
+  return x + y * r + s;
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Preprocessor directives}
+  \begin{itemize}
+  \item Therefore, when defining macros, there is no such thing as too many
+    parentheses.
+\begin{lstlisting}[style=c]
+  #define max(a,b) ((a) > (b) ? (a) : (b))
+  #define prod(a,b) ((a) * (b))
+\end{lstlisting}
+  \item Just as \texttt{\#define} ``constants'' are not real constants, macros
+    are \emph{not} functions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Preprocessor directives}
+  \begin{itemize}
+  \item You can use preprocessor directives to selectively enable or disable
+    features in a program.
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+  #ifdef HAVE_MPI
+  #ifdef HAVE_OPENMP
+    int acquired;
+    MPI_Init_thread(&argc, &argv,
+                    MPI_THREAD_FUNNELED,
+                    &acquired);
+    MPI_Comm_rank(MPI_COMM_WORLD, rank);
+    if (*rank == 0)
+      printf("Acquired MPI threading level: %d\n", acquired);
+  #else
+    MPI_Init(&argc, &argv);
+  #endif
+    MPI_Comm_size(MPI_COMM_WORLD, size);
+    MPI_Comm_rank(MPI_COMM_WORLD, rank);
+  #else
+    *rank = 0;
+    *size = 1;
+  #endif
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Preprocessor directives}
+  \begin{itemize}
+  \item Compilers allow you to define preprocessor symbols when compiling.
+    E.g. \texttt{gcc -DHAVE\_MPI ...}, or with CMake:
+\begin{lstlisting}
+  add_definitions(-DHAVE_MPI)
+\end{lstlisting}
+  \item A common trick for making sure a header file is only included once:
+\begin{lstlisting}
+  #ifndef _MY_HEADER_FILE_H_
+  #define _MY_HEADER_FILE_H_
+
+  // ...
+
+  #endif
 \end{lstlisting}
   \end{itemize}
 \end{frame}
