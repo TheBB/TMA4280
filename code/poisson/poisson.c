@@ -1,5 +1,5 @@
 /**
- * C-program to solve the two-dimensional Poisson equation on
+ * C program to solve the two-dimensional Poisson equation on
  * a unit square using one-dimensional eigenvalue decompositions
  * and fast sine transforms.
  *
