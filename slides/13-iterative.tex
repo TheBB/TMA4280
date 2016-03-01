@@ -1,0 +1,452 @@
+\input{preamble}
+
+\title{Iterative Poisson solvers}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Iterative solves}
+  \begin{itemize}
+  \item So far we have considered direct methods, which work on the matrix and
+    its elements.
+  \item Now: iterative methods, which seek to solve the system by iteration,
+    gradually improving an estimate of the solution.
+  \item In general they only yield an approximation to the solution, instead of
+    the exact solution.
+  \item Important concept: the \emph{residual}
+    \[
+      \bm r = \bm b - \bm A \bm x^k
+    \]
+    at some iteration $k$.
+  \item Obviously if $\bm x$ is the exact solution then $\bm r = \bm 0$.
+  \item The residual is used as a ``forward'' error estimate, but should not be
+    confused with the actual error.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fixed point iteration}
+  \begin{itemize}
+  \item It's tempting to try some schemes we learned in elementary calculus.
+  \item Rewrite the problem on the form $\bm x =g(\bm x)$ for some function $g$:
+    \[
+      \bm A \bm x = \bm b \Rightarrow (\bm A + \bm I) \bm x - \bm b = \bm x,
+    \]
+    thus
+    \[
+      \bm x^{k+1} = g(\bm x^k) = (\bm A + \bm I) \bm x^k - \bm b.
+    \]
+  \item Unfortunately this only works if $\bm g$ is a \emph{contraction}, which
+    means that
+    \[
+      \max_i |\lambda_i(\bm A + \bm I)| < 1
+    \]
+    which is seldom the case.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Newton iteration}
+  \begin{itemize}
+  \item Newton iteration works on a problem on the form $f(\bm x) = 0$, in other
+    words $f(\bm x) = \bm A \bm x - \bm b$.
+  \item It takes the form
+    \[
+      \bm x^{k+1} = \bm x^k - \bm Df(\bm x^k)^{-1} f(\bm x^k)
+    \]
+    where $\bm Df$ is the derivative (Jacobian) matrix of $f$.
+  \item In our case we get $\bm Df = \bm A$ so
+    \[
+      \bm x^{k+1} = \bm x^k - \bm A^{-1}(\bm A \bm x^{k} - \bm b) = \bm A^{-1} \bm b
+    \]
+    so we are back to square one.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Splitting methods}
+  \begin{itemize}
+  \item Split the matrix $\bm A$ into three parts,
+    \[
+      \underbrace{
+        \begin{pmatrix}
+          \\
+          a_{21} \\
+          a_{31} & a_{32} \\
+          \vdots & \vdots & \ddots
+        \end{pmatrix}
+      }_{\bm L}
+      +
+      \underbrace{
+        \begin{pmatrix}
+          a_{11} \\
+          & a_{22} \\
+          && a_{33} \\
+          &&& \ddots
+        \end{pmatrix}
+      }_{\bm D}
+      +
+      \underbrace{
+        \begin{pmatrix}
+          & a_{12} & a_{13} & \cdots \\
+          && a_{23} & \cdots \\
+          &&& \ddots
+        \end{pmatrix}
+      }_{\bm U}
+    \]
+  \item Not to be confused with $\bm L$ and $\bm U$ from LU decomposition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss-Jacobi}
+  \begin{itemize}
+  \item Reorganize the system
+    \begin{align*}
+      \bm A \bm x &= \bm b \\
+      (\bm L + \bm D + \bm U) \bm x &= \bm b \\
+      \bm D \bm x &= \bm b - (\bm L + \bm U) \bm x
+    \end{align*}
+  \item And form an iterative scheme:
+    \[
+      \bm D \bm x^{k+1} = \bm b - (\bm L + \bm U) \bm x^k.
+    \]
+  \item This is the \emph{Gauss-Jacobi} method.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss-Seidel}
+  \begin{itemize}
+  \item Likewise, we can do
+    \begin{align*}
+      \bm A \bm x &= \bm b \\
+      (\bm L + \bm D + \bm U) \bm x &= \bm b \\
+      (\bm L + \bm D) \bm x &= \bm b - \bm U \bm x
+    \end{align*}
+  \item And form an iterative scheme:
+    \[
+      (\bm L + \bm D) \bm x^{k+1} = \bm b - \bm U \bm x^k.
+    \]
+  \item This is the \emph{Gauss-Seidel} method.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Splitting methods}
+  \begin{itemize}
+  \item The rationales behind these methods are easy to spot on component form.
+  \item Gauss-Jacobi solves the $i$th equation for the $i$th unknown, given the
+    previous approximate values of the other unknowns:
+    \[
+      x_i^{k+1} = \frac{1}{a_{ii}}\left( b_i - \sum_{j \not= i} a_{ij} x_j^k \right)
+    \]
+  \item Gauss-Seidel does the same, but uses ``updated'' values when available.
+    \[
+      x_i^{k+1} = \frac{1}{a_{ii}}
+      \left( b_i - \sum_{j=1}^{i-1} a_{ij} x_j^{k+1} - \sum_{j=i+1}^{N} a_{ij} x_j^k \right)
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Jacobi}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+void GaussJacobi(Matrix A, Vector u, int maxit) {
+  int it=0, i, j;
+  Vector b, e = vector(u->len);  // initialize both
+  copy(b, u); fill(u, 0.0);
+  while (it++ < maxit) {
+    copy(e, u); copy(u, b);
+    for (i = 0; i < A->rows; ++i) {
+      for (j = 0; j < A->cols; ++j) {
+        if (j != i)
+          u[i] -= A[j][i] * e[j];
+      }
+      u[i] /= A[i][i];
+    }
+  }
+  free(b); free(e);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Jacobi with residual tolerance}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+void GaussJacobi(Matrix A, Vector u, double tol, int maxit) {
+  int it=0, i, j;
+  Vector b, e, r = vector(u->len);  // initialize all
+  copy(b, u); fill(u, 0.0);
+  double rl = infnorm(b), norm = inf;
+  while (it++ < maxit && norm > tol * rl) {
+    copy(e, u); copy(u, b);
+    for (i = 0; i < A->rows; ++i) {
+      for (j = 0; j < A->cols; ++j) {
+        if (j != i)
+          u[i] -= A[j][i] * e[j];
+      }
+      r[i] = u[i] - A[i][i] * e[i];
+      u[i] /= A[i][i];
+    }
+    norm = infnorm(r);
+  }
+  free(b, e, r);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Seidel}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+void GaussSeidel(Matrix A, Vector u, int maxit) {
+  int it=0, i, j;
+  Vector b, e = vector(u->len);  // initialize both
+  copy(b, u); fill(u, 0.0);
+  while (it++ < maxit) {
+    copy(e, u); copy(u, b);
+    for (i = 0; i < A->rows; ++i) {
+      for (j = 0; j < A->cols; ++j) {
+        if (j != i)
+          u[i] -= A[j][i] * e[j];
+      }
+      u[i] /= A[i][i]; e[i] = u[i];
+    }
+  }
+  free(b, e);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Seidel with residual tolerance}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+void GaussSeidel(Matrix A, Vector u, double tol, int maxit) {
+  int it=0, i, j;
+  Vector b, e, r = vector(u->len);  // initialize all
+  copy(b, u); fill(u, 0.0);
+  double rl = infnorm(b), norm = inf;
+  while (it++ < maxit && norm > tol * rl) {
+    copy(e, u); copy(u, b);
+    for (i = 0; i < A->rows; ++i) {
+      for (j = 0; j < A->cols; ++j) {
+        if (j != i)
+          u[i] -= A[j][i] * e[j];
+      }
+      r[i] = u[i] - A[i][i] * e[i];
+      u[i] /= A[i][i]; e[i] = u[i];
+    }
+    norm = infnorm(r);
+  }
+  free(b, e, r);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Jacobi parallelized}
+  \begin{itemize}
+  \item Gauss-Jacobi iterations are easily parallelized.
+  \item With OpenMP, for example, we can just fork on the rows.
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+    // ...
+    #pragma omp parallel for schedule(static)
+    for (i = 0; i < A->rows; ++i) {
+      for (j = 0; j < A->cols; ++j) {
+        if (j != i)
+          u[i] -= A[j][i] * e[j];
+      }
+      u[i] /= A[i][i];
+    }
+    // ...
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Matrix-free iterations}
+  \begin{itemize}
+  \item A characteristic property of iterative methods is that, unlike direct
+    methods, there is usually no need to explicitly store the matrix.
+  \item Usually they work just fine if you have a function for calculating the
+    matrix-vector product, or (in case of the splitting methods) a function for
+    updating a single unknown.
+  \item This allows us to heavily optimize Gauss-Jacobi.
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+    // ...
+    #pragma omp parallel for schedule(static)
+    for (i = 0; i < A->rows; ++i) {
+      if (i > 0)
+        u[i] += e[i-1];
+      if (i < e->len - 1)
+        u[i] += e[i+1];
+      u[i] /= 2.0;
+    }
+    // ...
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss-Seidel parallelized}
+  \begin{itemize}
+  \item The Gauss-Seidel method is more difficult to parallelize.
+  \item Since the data from one iteration is immediately required in the next,
+    there is no way to implement Gauss-Seidel as given in a parallel manner.
+  \item We can do something similar, however. There is nothing that mandates we
+    sweep the unknowns in a specific order.
+  \item If we change the order, we can do better.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss-Seidel parallelized}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.4]
+      \draw[darkblue] (-13,0) -- (13,0);
+      \draw[darkblue, fill=salmon, very thick] (-9,0) circle (1);
+      \draw[darkblue, fill=cadet, very thick] (-6,0) circle (1);
+      \draw[darkblue, fill=salmon, very thick] (-3,0) circle (1);
+      \draw[darkblue, fill=cadet, very thick] (0,0) circle (1);
+      \draw[darkblue, fill=salmon, very thick] (3,0) circle (1);
+      \draw[darkblue, fill=cadet, very thick] (6,0) circle (1);
+      \draw[darkblue, fill=salmon, very thick] (9,0) circle (1);
+    \end{tikzpicture}
+  \end{center}
+  \begin{itemize}
+  \item By ``coloring'' the nodes in an alternating pattern, we see that ``red''
+    nodes only couple to ``blue'' ones, and vice versa.
+  \item We can sweep all red nodes in parallel, and then sweep all blue nodes in
+    parallel.
+  \item Note: this is not the same as Gauss-Seidel, not even mathematically.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Seidel parallelized}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+  for (j = 0; j < 2; ++j) {
+    // ...
+    #pragma omp parallel for schedule(static)
+    for (i = j; i < e->len; i += 2) {
+      if (i > 0)
+        u[i] += e[i-1];
+      if (i < e->len - 1)
+        u[i] += e[i+1];
+      u[i] /= 2.0; e[i] = u[i];
+    }
+    // ...
+  }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Redundant storage}
+  \begin{itemize}
+  \item Another freedom offered by iterative schemes is that we can store data
+    as we see fit.
+  \item For the direct methods, we eliminated the nodes on the boundary, since
+    they are not part of the system.
+  \item In iterative methods, we are free to explicitly store the boundary
+    elements.
+  \item This is very beneficial, in particular when we consider MPI
+    parallelization (soon).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gauss-Jacobi with redundant storage}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+    // ...
+    #pragma omp parallel for schedule(static)
+    for (i = 1; i < e->len - 1; ++i) {
+      u[i] += e[i-1];
+      u[i] += e[i+1];
+      u[i] /= 2.0;
+    }
+    // ...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss Jacobi with MPI}
+  \begin{itemize}
+  \item There are essentially two ways to partition a linear system of equations
+    \begin{enumerate}
+    \item We can partition the data structure (the matrix and vector)
+    \item We can partition the problem that generated the linear system in the
+      first place. This is referred to as \emph{domain decompoisition}.
+    \end{enumerate}
+  \item These approaches are not independent. In particular, domain
+    decomposition can be seen as a way of generating the data structure
+    partitioning. (More on this later.)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrix partitioning}
+  Row-based division
+  \[
+    \begin{pmatrix}
+      \cdots & \bm A_0 & \cdots \\
+      \cdots & \bm A_1 & \cdots \\
+      \cdots & \bm A_2 & \cdots
+    \end{pmatrix}
+    \begin{pmatrix}
+      \bm x_0 \\ \bm x_1 \\ \bm x_2
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      \bm b_0 \\ \bm b_1 \\ \bm b_2
+    \end{pmatrix}
+  \]
+  Process $p$ can evaluate in two steps:
+  \begin{enumerate}
+  \item Collect (reduce) the entire vector $\bm x$
+  \item Perform the local product $\bm A_p \bm x$
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrix partitioning}
+  Column-based division
+  \[
+    \begin{pmatrix}
+      \vdots & \vdots & \vdots \\
+      \bm A_0 & \bm A_1 & \bm A_2 \\
+      \vdots & \vdots & \vdots
+    \end{pmatrix}
+    \begin{pmatrix}
+      \bm x_0 \\ \bm x_1 \\ \bm x_2
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      \bm b_0 \\ \bm b_1 \\ \bm b_2
+    \end{pmatrix}
+  \]
+  Process $p$ can evaluate in two steps:
+  \begin{enumerate}
+  \item Perform the local product $\bm A_p \bm x_p$
+  \item Distribute (reduce) the entire vector $\bm x$
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Domain decomposition}
+  \begin{itemize}
+  \item Common to both these approaches is that we need to exchange the entire
+    vector for each multiplication.
+  \item Domain decomposition can help reduce the amount of communication
+    necessary.
+  \item Essentially, it highlights a nearly block-diagonal matrix structure.
+  \item Can be used for all kinds of grids.
+  \end{itemize}
+  \begin{center}
+    \includegraphics[height=3.5cm]{\figs/grid2D_1domain}
+    \includegraphics[height=3.5cm]{\figs/grid2D_2domains}
+  \end{center}
+\end{frame}
+
+\input{postamble}
