@@ -449,4 +449,192 @@ void GaussSeidel(Matrix A, Vector u, double tol, int maxit) {
   \end{center}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Gauss-Jacobi with MPI (1D)}
+  \begin{itemize}
+  \item We partition the mesh. In 1D this is the same as splitting a vector.
+    \begin{align*}
+      P_0: &\qquad \begin{pmatrix} x_1 & x_2 & \cdots & x_q \end{pmatrix} \\
+      P_1: &\qquad \begin{pmatrix} x_{q+1} & x_{q+2} & \cdots & x_{2q} \end{pmatrix} \\
+      \vdots &
+    \end{align*}
+  \item On each process, use a redundant storage format, with extra elements at
+    the start and end of the vector. Even on ``interior'' processes.
+    \begin{align*}
+      P_0: &\qquad \begin{pmatrix}
+        {\color{gray} x_0} & x_1 & x_2 & \cdots & x_q & {\color{gray} x_{q+1}}
+      \end{pmatrix} \\
+      P_1: &\qquad \begin{pmatrix}
+        {\color{gray} x_q} & x_{q+1} & x_{q+2} & \cdots & x_{2q} & {\color{gray} x_{2q+1}}
+      \end{pmatrix} \\
+      \vdots &
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss-Jacobi with MPI (1D)}
+  \begin{itemize}
+  \item The only difference required now is to obtain the neighbouring boundary
+    values from the next and previous process before the Gauss-Jacobi iteration.
+  \item MPI has built-in functions for setting up processes in a
+    \emph{topology}. This is easy to do manually in one dimension but they are
+    very handy in several dimensions:
+    \begin{itemize}
+    \item \texttt{MPI\_Dims\_create}
+    \item \texttt{MPI\_Cart\_create}
+    \item \texttt{MPI\_Cart\_coords}
+    \item \texttt{MPI\_Cart\_Shift}
+    \item \texttt{MPI\_Sendrecv}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gauss-Jacobi with MPI (2D)}
+  \begin{itemize}
+  \item For convenience, we store our solution in a matrix.
+  \item We want to partition it. Several possibilities:
+    \[
+      \begin{pmatrix}
+        \vdots & \vdots & \vdots & \vdots \\
+        \bm X_0 & \bm X_1 & \bm X_2 & \bm X_3 \\
+        \vdots & \vdots & \vdots & \vdots
+      \end{pmatrix}
+      \quad
+      \begin{pmatrix}
+        \bm X_0 & \bm X_1 \\
+        \bm X_2 & \bm X_3
+      \end{pmatrix}
+      \quad
+      \begin{pmatrix}
+        \cdots & \bm X_0 & \cdots \\
+        \cdots & \bm X_1 & \cdots \\
+        \cdots & \bm X_2 & \cdots \\
+        \cdots & \bm X_3 & \cdots
+      \end{pmatrix}
+    \]
+  \item The MPI tools allow us to handle all these cases with essentially the
+    same code.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distributed arrays}
+  \begin{itemize}
+  \item Such arrays are called \emph{darrays}---distrbuted arrays.
+  \item The functionality is heavily inspired by the \emph{High Performance
+      Fortran} standard.
+  \item The term \emph{topology} means, in laymans terms, ``how stuff is
+    connected.''
+  \item An array partitioning consists of a topology and a mapping of processes
+    onto this topology.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distributed arrays}
+  An example topology.
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8]
+      \foreach \i in {0,3,6,9} {
+        \draw[darkblue, very thick] (\i,0) -- (\i,6);
+      }
+      \foreach \i in {0,3,6} {
+        \draw[darkblue, very thick] (0,\i) -- (9,\i);
+      }
+      \node at (1.5,4.5) {$P_0 = (0,0)$};
+      \node at (4.5,4.5) {$P_1 = (0,1)$};
+      \node at (7.5,4.5) {$P_2 = (0,2)$};
+      \node at (1.5,1.5) {$P_3 = (1,0)$};
+      \node at (4.5,1.5) {$P_4 = (1,1)$};
+      \node at (7.5,1.5) {$P_5 = (1,2)$};
+      \node[anchor=north] at (4.5,-0.2) {$\text{sizes} = [2,3]$};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Distributed arrays}
+  \begin{itemize}
+  \item Here: a Cartesian topology expressed as the number of processes along
+    each dimension ($2$ and $3$, respectively).
+  \item The location of a particular domain in the topology can be expressed as
+    an integer along each dimension.
+  \item A mapping of the processes onto the topology (e.g. $P_1 \leftrightarrow
+    (0,1)$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed arrays}
+  \begin{itemize}
+  \item \texttt{MPI\_Dims\_create} assigns sizes to each dimension.
+  \item Block partitioning
+\begin{lstlisting}[style=c]
+  int sizes[2];
+  sizes[0] = sizes[1] = 0;
+  MPI_Dims_create(size, 2, sizes);
+\end{lstlisting}
+  \item Strip partitioning: specify a dimension by setting it to a nonzero
+    value.
+\begin{lstlisting}[style=c]
+  int sizes[2];
+  sizes[0] = 1; sizes[1] = 0;
+  MPI_Dims_create(size, 2, sizes);
+\end{lstlisting}
+  \item Upon return the \texttt{sizes} array holds the size of each dimension.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed arrays}
+  \begin{itemize}
+  \item To generate the mapping, we have to define a new communicator with the
+    topology attached to it.
+\begin{lstlisting}[style=c]
+  int periodic[2];
+  periodic[0] = periodic[1] = 0;
+  MPI_Cart_create(MPI_COMM_WORLD, 2, sizes,
+                  periodic, 0, &new_comm);
+\end{lstlisting}
+  \item The function can optionally reorder the processes (give them new ranks)
+    and handle periodic topologies.
+  \item The new communicator is stored in \texttt{new\_comm}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed arrays}
+  \begin{itemize}
+  \item Each process can now query for their precise coordinates using the
+    \texttt{MPI\_Cart\_coords} function.
+\begin{lstlisting}[style=c]
+  int coords[2];
+  MPI_Cart_coords(new_comm, rank, 2, coords);
+\end{lstlisting}
+  \item Note that unless you specified no reordering, the process may have a
+    different rank in the new communicator than in the old one!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed arrays}
+  \begin{itemize}
+  \item To send data a certain number of steps in one direction, use
+    \texttt{MPI\_Cart\_shift} to compute, for any given process, the process to
+    send to and the one to receive from.
+\begin{lstlisting}[style=c]
+  int send_to, receive_from;
+  MPI_Cart_shift(new_comm, 1, 1,
+                 &receive_from, &send_to);
+\end{lstlisting}
+  \item The function may give you the value \texttt{MPI\_PROC\_NULL} for
+    processes near the boundary, which is safe to pass to other message
+    functions and which results effectively in a effective no-op.
+  \item You can use \texttt{MPI\_Sendrecv} to simultaneously send and receive to
+    and from two different processes.
+  \end{itemize}
+\end{frame}
+
 \input{postamble}
