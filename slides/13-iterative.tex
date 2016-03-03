@@ -637,4 +637,100 @@ void GaussSeidel(Matrix A, Vector u, double tol, int maxit) {
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Krylov methods}
+  \begin{itemize}
+  \item Probably the most important class of iterative methods.
+  \item The \emph{Cayley-Hamilton} theorem implies that the inverse of a matrix
+    $\bm A$ is a linear combination of $\{\bm A^k \;|\; k = 0,\ldots,N-1 \}$.
+  \item In other words, there exists $c_j$ so that
+    \[
+      \bm x = \sum_{j=0}^{N-1} c_j \bm A^j \bm b
+    \]
+  \item Idea: make an initial guess, then iteratively eliminate the residual
+    along various Krylov vectors.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Krylov methods}
+  \begin{itemize}
+  \item There are many different Krylov methods, each suitable for different
+    types of matrices (symmetries, definiteness, and so on).
+  \item The two most important ones:
+    \begin{itemize}
+    \item GMRES: Generalized Minimal Residual. This is the ``hammer'' in the
+      sense that it works for just about every kind of matrix. There is no
+      requirement of symmetry or definiteness.
+    \item CG: Conjugate Gradient. Works for symmetric, positive definite
+      systems.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conjugate gradient}
+  \begin{enumerate}
+  \item Set $\bm x_0 = \bm 0$, $\bm r_0 = \bm b$.
+  \item For $m = 1,2,\ldots$
+    \begin{enumerate}
+    \item
+      $\beta_m = \left( \bm r_{m-1}^\intercal \bm r_{m-1} \right) /
+      \left(\bm r_{m-2}^\intercal \bm r_{m-2} \right)
+      \qquad \qquad (\beta_1 = 0)$
+    \item
+      $\bm p_m = \bm r_{m-1} + \beta_m \bm p_{m-1}
+      \qquad \qquad \qquad \qquad (\bm p_1 = \bm r_0)$
+    \item
+      $\alpha_m = \left( \bm r_{m-1}^\intercal \bm r_{m-1} \right) /
+      \left( \bm p_m^\intercal \bm A \bm p_m \right)$
+    \item $\bm x_m = \bm x_{m-1} + \alpha_m \bm p_m$
+    \item $\bm r_m = \bm r_{m-1} - \alpha_m \bm A \bm p_m$
+    \end{enumerate}
+  \item End.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Krylov methods}
+  \begin{itemize}
+  \item Note: Krylov methods produce the exact solution after $N$ iterations. In
+    that sense they are direct methods.
+  \item The hope is to produce a good enough solution after very few iterations.
+    In this sense they are iterative methods.
+  \item A typical stopping criterion is to halt when the residual $\bm r$ is
+    below a certain tolerance:
+    \[
+      \| \bm r_k \| < \epsilon.
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Conjugate gradient}
+\begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+void cg(Matrix A, Vector b, double tol) {
+  int it = 0;
+  Vector r, p, f = vector(b->len);
+  copy(r, b); fill(b, 0.0);
+  double dotp, rl = sqrt(dot(r, r));
+  while (it++ < b->len && rl > tol) {
+    if (it == 1) {
+      copy(p, r); dotp = dot(r, r);
+    }
+    else {
+      double dotp_new = dot(r, r);
+      scale(p, dotp_new / dotp);
+      axpy(p, r, 1.0);
+    }
+    MxV(A, p, f);
+    double alpha = dotp / dot(p, f);
+    axpy(b, p, alpha); axpy(r, f, -alpha);
+    rl = sqrt(dot(r, r));
+  }
+  free(r, p, f);
+}
+\end{lstlisting}
+\end{frame}
+
 \input{postamble}
