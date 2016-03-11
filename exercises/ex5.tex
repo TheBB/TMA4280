@@ -109,6 +109,25 @@
   \end{enumerate}
 \end{ex}
 
+\begin{sol} \\~\\
+  \begin{enumerate}
+  \item Message passing can be used on all multi-processor systems, but is
+    mostly relevant on distributed memory systems, where it is the only viable
+    way to communicate between different processes. On shared memory systems you
+    can use shared memory between threads as an implicit form of communication.
+  \item The advantages of using a standardized \emph{anything} is that your code
+    can (should) run on any implementation of MPI that conforms with the MPI
+    standard. In practice, that means your code will run without changes on your
+    own computer (which runs e.g. OpenMPI or MPICH or a similar library) and on
+    Vilje (which uses Intel's MPI implementation).
+  \item The main groups of communication routines are: one-to-one, one-to-all
+    (as well as all-to-one) and all-to-all.
+  \item This is a deadlock situation. Since both processes expect to receive a
+    message before they send one, both of them will block waiting for a message
+    that never appears. The program will stall.
+  \end{enumerate}
+\end{sol}
+
 \begin{ex}
   Assume a distributed memory multiprocessor computer with the following
   interconnect charateristic: the time $\tau(k)$ it takes to send a message with
@@ -131,6 +150,23 @@
   \end{enumerate}
 \end{ex}
 
+\begin{sol} \\~\\
+  \begin{enumerate}
+  \item Setting $\tau(k) = 2\tau_\text{s}$ and solving for $k$, we get
+    \[
+      k = \frac{\tau_\text{s}}{\beta} = \SI{800}{\byte}.
+    \]
+  \item A (double precision) floating point number is eight bytes, so it takes
+    \[
+      \tau(8) = \SI{1}{\micro\second} +
+      \SI{8}{\byte}\cdot\SI{1.25}{\nano\second\per\byte}
+      = \SI{1.01}{\micro\second}
+    \]
+    This is about half the time for one hundredth of the message length, so it
+    is clearly preferable to send long messages when possible.
+  \end{enumerate}
+\end{sol}
+
 \begin{ex}
   Let $\bm A, \bm B, \bm C, \bm D$ be matrices of size $n \times n$, and let the
   matrix $\bm D$ be constructed as
@@ -139,6 +175,18 @@
   \]
   How many floating point operations does it take to construct $\bm D$?
 \end{ex}
+
+\begin{sol}
+  A scalar (inner) product takes $n$ multiplications and $n-1$ additions, so
+  $2n-1$ operations in total. A matrix-matrix product is $n^2$ such inner
+  products, so it takes $n^2(2n-1)$ operations. The multiplication with the
+  scalar and the addition of another matrix both require $n^2$ operations (since
+  they are single operations applied to each element). In total we get
+  \[
+    n^2(2n-1) + 2n^2
+  \]
+  operations.
+\end{sol}
 
 \begin{ex}
   Implement an MPI-based matrix multiplication program. It should accept one
@@ -164,5 +212,41 @@
   \item What would a matrix transpose operation look like?
   \end{enumerate}
 \end{ex}
+
+\begin{sol}
+  See the attached file for the source code.
+
+  \begin{enumerate}
+  \item If we store the matrix by rows instead of columns (but we keep the
+    vector in the same format), we have to collect the vector \emph{before} the
+    local matrix-vector product, since this product will now expect a ``long''
+    vector as input and produce a ``short'' vector as output. Correspondingly,
+    there will not be a need for communication \emph{after} the local product
+    has been computed, as the result will be immediately usable as the local
+    result vector.
+  \item The communication in this method occurs when the global matrix-vector
+    product must be assembled on each process after the local producs have been
+    computed. This takes place because the local product on process $p$ may have
+    contributions to elements which are owned by another process $q \not= p$.
+
+    However, for many applications the sparsity pattern of the matrix is known
+    in advance, so it is possible to predict exactly which elements must be
+    communicated where: process $p$ must communicate element $j$ to process $q$
+    (who owns element $j$) the local matrix $\bm A$ on process $p$ has any
+    nonzero element in row $j$. If there are only zeros in that row, then
+    clearly no communication is necessary because the contribution will be zero.
+
+    In other words, the best possible outcome is if all local matrices on each
+    process only have nonzero elements corresponding to those indices which are
+    owned by that process. Such matrices are \emph{block diagonal}. If the index
+    sets for the processes correspond to the blocks, no communication will be
+    necessary.
+
+    In reality this almost never happens, but many matrices are \emph{almost}
+    block diagonal, in which case it is possible to compute matrix vector
+    products with very little communication indeed.
+  \item For the next exercise!
+  \end{enumerate}
+\end{sol}
 
 \end{document}
