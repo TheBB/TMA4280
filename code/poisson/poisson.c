@@ -39,9 +39,9 @@ int main(int argc, char **argv)
 
     // The number of grid points in each direction is n+1
     // The number of degrees of freedom in each direction is n-1
-    unsigned int n = atoi(argv[1]);
-    unsigned int m = n - 1;
-    unsigned int nn = 4 * n;
+    int n = atoi(argv[1]);
+    int m = n - 1;
+    int nn = 4 * n;
     real h = 1.0 / n;
 
     // Grid points
