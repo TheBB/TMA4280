@@ -224,7 +224,7 @@ using
 \begin{lstlisting}
 module load intelcomp
 module load cmake
-CC=icc FC=ifort cmake . -DCMAKE_BUILD_TYPE=Release
+CC=mpicc FC=mpif90 cmake . -DCMAKE_BUILD_TYPE=Release
 \end{lstlisting}
 assuming you are located in the folder with the \texttt{CMakeLists.txt}. On
 success this will generate a makefile, and you can then build and run the
