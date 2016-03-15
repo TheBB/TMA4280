@@ -28,6 +28,9 @@ if(ENABLE_OPENMP)
   endif()
 endif()
 
+# Use C99
+set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+
 # Send the include directories to the compiler
 include_directories(${INCLUDES})
 
