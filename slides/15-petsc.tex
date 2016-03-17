@@ -1,0 +1,503 @@
+\input{preamble}
+
+\title{PETSc}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{December 2015}
+\maketitle
+
+\begin{frame}
+  \frametitle{Linear algebra packages}
+  \begin{itemize}
+  \item So far: BLAS and LAPACK (dense problems, forward and backward
+    operations).
+  \item There are also packages for sparse linear algebra.
+    \begin{itemize}
+    \item MUMPS: MUltifrontal Massively Parallel sparse direct Solver, not to be
+      confused with the Massachusetts general hospital Utility Multi-Programming
+      System, which makes COBOL look like fun, nor to be confused with the
+      disease (which also makes COBOL look like fun).
+    \item UMFPACK: Unsymmetric MultiFrontal method
+    \item SuperLU: Sparse, direct solver (comes in threaded and distributed
+      variants but no hybrid)
+    \item HYPRE: Sparse, iterative solvers and preconditioners
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear algebra packages}
+  Some linear algebra packages have more than just solvers, but contain other
+  tools that are helpful in scientific computing as well.
+  \begin{itemize}
+  \item Trilinos: Solvers, finite element libraries and more
+  \item PETSc: The Portable Extensible Toolkit for Scientific computing.
+  \end{itemize}
+  It's possible to use Trilinos trough PETSc and probably also the other way
+  around. In the following we will focus on PETSc.
+\end{frame}
+
+\begin{frame}
+  \frametitle{PETSc}
+  \begin{itemize}
+  \item PETSc (Pet-see) is an open-source scientific computing library written
+    in C.
+  \item In spite of being written in C, it calls itself object oriented.
+  \item There are interfaces available for Fortran, Python and Matlab.
+  \item PETSc has great support for distributed programming. Also available is a
+    form of threaded support and (upcoming) hybrid.
+  \item It can make use of Nvidia GPUs through CUDA.
+  \item Direct and iterative linear solvers for sparse matrices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Installing PETSc}
+  \begin{itemize}
+  \item PETSc is packaged for Ubuntu:
+    \begin{lstlisting}[style=shell]
+sudo apt-get install libpetsc-dev
+    \end{lstlisting}
+  \item On Vilje it is available as a module:
+    \begin{lstlisting}[style=shell]
+module load petsc
+    \end{lstlisting}
+  \item Both these packages are available with MPI support.
+  \item On Vilje (and on Ubuntu 14.04) the default PETSc version is 3.4. The
+    latest release is 3.6.
+  \item At Sintef, we compile PETSc manually.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building PETSc}
+  \begin{itemize}
+  \item Once PETSc has been downloaded, you should define two environment
+    variables.
+    \begin{itemize}
+    \item \texttt{PETSC\_DIR}: The path to the main library headers.
+    \item \texttt{PETSC\_ARCH}: The name of your build configuration. You can
+      make something up.
+    \end{itemize}
+  \item These are defined for you by the module on Vilje, but on e.g. Ubuntu you
+    have to set them manually (last time I checked).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building PETSc}
+  Building PETSc can be tricky. It does not use CMake. Here's an example
+  configuration command.
+  \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+  PETSC_DIR=/home/akva/kode/petsc-3.4.2
+  PETSC_ARCH=linux-gnu-cxx-opt
+  ./configure --with-precision=double
+              --with-scalar-type=real
+              --with-debugging=0
+              --COPTFLAGS=-O3 --CXXOPTFLAGS=-O3
+              --FCOPTFLAGS=-O3
+              --with-blas-lib=/usr/lib/libblas.a
+              --with-lapack-lib=/usr/lib/liblapack.a
+              --with-64-bit-indices=0 --with-clanguage=c++
+              --with-mpi=1 --LIBS=-ldl
+              --with-hypre=1 --with-umfpack=1
+              --with-ml=1
+              --with-superlu=1
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linking to PETSc}
+  \begin{itemize}
+  \item As PETSc is a big package, linking against it in your program is not just
+    a matter of adding \texttt{-lpetsc}.
+  \item Imperative to use helpers such as CMake for this.
+  \item PETSc changed to a CMake based build system in version 3.2. This makes
+    our job a lot easier. (You should still use the basic configuration command,
+    however.)
+  \item By default, there is no support for PETSc in CMake 2.8. However,
+    CMake is easy to extend.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Finding PETSc}
+  \begin{itemize}
+  \item We have seen how CMake finds a library
+    \begin{lstlisting}
+      find_package(Foo REQUIRED)
+    \end{lstlisting}
+  \item What happens is that CMake runs a file called \texttt{FindFoo.cmake}.
+    This is just a file with regular CMake commands, which in the end sets
+    certain variables, which we can use afterwards.
+  \item We can write files like this ourselves.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Finding PETSc with CMake}
+  \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+find_path(
+  PETSC_INCLUDE_DIR
+  NAMES petsc.h
+  PATHS /usr/include/petsc/
+        $ENV{PETSC_DIR}/include)
+find_path(
+  PETSCCONF_INCLUDE_DIR
+  NAMES petscconf.h
+  PATHS /usr/include/petsc/
+        $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/include)
+
+include($ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/PETScConfig.cmake)
+find_library(PETSC_LIB_PETSC petsc
+             HINTS $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/lib)
+set(PETSC_LIBRARIES ${PETSC_LIB_PETSC} ${PETSC_PACKAGE_LIBS})
+set(PETSC_INCLUDES ${PETSC_INCLUDE_DIR} ${PETSCCONF_INCLUDE_DIR}
+                   ${PETSC_PACKAGE_INCLUDES})
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Finding PETSc with CMake}
+  \begin{itemize}
+  \item Before we can use this rule, we have to tell CMake where to find
+    \texttt{FindPETSc.cmake}. (How to find the finder.)
+  \item Typically such files are stored in \texttt{cmake/Modules} in your
+    project, so this is a typical line to find in CMake files:
+    \begin{lstlisting}
+set(CMAKE_MODULE_PATH
+    ${CMAKE_MODULE_PATH}
+    ${CMAKE_SOURCE_DIR}/cmake/Modules)
+    \end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Finished CMakeLists.txt}
+  \begin{lstlisting}
+set(CMAKE_MODULE_PATH
+    ${CMAKE_MODULE_PATH}
+    ${CMAKE_SOURCE_DIR}/cmake/Modules)
+
+find_package(PETSc REQUIRED)
+
+include_directories(${PETSC_INCLUDES})
+
+add_executable(petsc-test main.c)
+target_link_libraries(petsc-test
+                      ${PETSC_LIBRARIES})
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PETSc conventions}
+  \begin{itemize}
+  \item PETSc is a large library, so it needs conventions to keep it organized.
+  \item Methods and symbols have prefixes which relate to their category.
+    \begin{itemize}
+    \item Vec: Vectors
+    \item Mat: Matrices
+    \item KSP: Linear solves (Krylov space)
+    \item PC: Preconditioners
+    \item Etc\ldots
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PETSc Vectors}
+  \begin{itemize}
+  \item A vector is stored in an opaque data structure called a \texttt{Vec}.
+  \item Vectors can have different types, such as
+    \begin{itemize}
+    \item seq: Sequential (normal)
+    \item mpi: Distributed
+    \item pthread: Threaded
+    \item cusp: CUDA (Nividia GPU) format
+    \end{itemize}
+  \item The type and its implementation is hidden from the user: it's an
+    implementation detail.
+  \item There is \emph{no} direct data access. Everything goes through
+    functions. This helps to abstract away implementation details for different
+    types.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PETSc Matrices}
+  \begin{itemize}
+  \item A matrix is stored in an opaque data structure called a \texttt{Mat}.
+  \item Matrices can also have different types,
+    \begin{itemize}
+    \item seqdense: Sequential (normal) dense
+    \item seqaij: Sequential (normal) sparse
+    \item mpiaij: Distributed sparse
+    \item aijcusp: CUDA (Nvidia GPU) sparse
+    \end{itemize}
+  \item We will play around with seqaij and mpiaij matrices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Poisson solver in PETSc}
+  \begin{itemize}
+  \item As is common with C libraries like this, much of our code will be
+    initialization.
+  \item PETSc has tools for finite difference methods, but we will avoid them.
+  \item We focus here only on the setup of the vector, the matrix and the
+    solution of the linear system.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector setup}
+  \begin{lstlisting}[style=c]
+  Vec b;
+
+  // Use PETSC_COMM_SELF to get a seq vector
+  VecCreate(PETSC_COMM_WORLD, &b);
+
+  // Local and global sizes
+  VecSetSizes(b, PETSC_DECIDE, m*m);
+
+  double hh = 1.0 / n / n;
+  for (size_t j = 0; j < m*m; j++)
+    VecSetValue(b, j, hh, INSERT_VALUES);
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Matrix setup}
+  \begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+  Mat A;
+  MatCreate(PETSC_COMM_WORLD, &A);
+  MatSetType(A, MATSEQAIJ);
+  MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*m, m*m);
+
+  // Diagonal
+  for (size_t i = 0; i < m*m, i++)
+    MatSetValue(A, i, i, 4.0, INSERT_VALUES);
+
+  // L-R coupling
+  for (size_t i = 0; i < m*m - 1, i++) {
+    if (i % m != m-1)
+      MatSetValue(A, i, i+1, -1.0, INSERT_VALUES);
+    if (i % m)
+      MatSetValue(A, i, i-1, -1.0, INSERT_VALUES);
+  }
+
+  // U-D coupling
+  for (size_t i = m; i < m*m, i++) {
+    MatSetValue(A, i, i-m, -1.0, INSERT_VALUES);
+    MatSetValue(A, i-m, i, -1.0, INSERT_VALUES);
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Synchronization}
+  The vector and matrix must be \emph{assembled} before we can use them. This
+  might involve communication.
+  \begin{lstlisting}[style=c]
+    VecAssemblyBegin(b);
+    VecAssemblyEnd(b);
+    MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);
+    MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solver setup}
+  \begin{lstlisting}[style=c]
+  KSP sol;
+  KSPCreate(PETSC_COMM_WORLD, &sol);
+
+  KSPSetType(ksp, "cg");
+  KSPSetTolerances(ksp, 1e-10, 1e-10, 1e6, 10000);
+  KSPSetOperators(ksp, A, A);
+
+  PC pc;
+  KSPGetPC(ksp, &pc);
+  PCSetType(pc, "ilu");
+  PCSetFromOptions(pc);
+  PCSetUp(pc);
+
+  KSPSetFromOptions(ksp);
+  KSPSetUp(ksp);
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solving}
+  \begin{itemize}
+  \item To solve,
+    \begin{lstlisting}[style=c]
+  Vec x;
+  VecDuplicate(b, &x);
+  KSPSolve(ksp, b, x);
+    \end{lstlisting}
+  \item You will probably find that the solver performs rather poorly, both in
+    serial and parallel.
+  \item Reasons for this include
+    \begin{enumerate}
+    \item We fill the vector element by element,
+    \item We fill the matrix element by element,
+    \item We haven't declared the sparsity pattern of the matrix, and
+    \item All processes fill all elements.
+    \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Fill the whole vector at once}
+  \begin{lstlisting}[style=c]
+  PetscInt low, high;
+  VecGetOwnershipRange(b, &low, &high);
+
+  PetscInt indices[high-low];
+  double vals[high-low];
+  for (size_t i = 0; i < high - 1; i++) {
+    inds[i] = low + i;
+    vals[i] = hh;
+  }
+  VecSetValues(b, high-low, inds, vals,
+               INSERT_VALUES);
+  free(inds); free(vals);
+  \end{lstlisting}
+  Similar but more involved for the matrix.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Declare the sparsity pattern}
+  \begin{itemize}
+  \item Why is this important?
+  \item PETSc uses a popular sparse matrix data structure called
+    \emph{compressed row storage} (CRS).
+  \item Each nonzero element in the matrix is stored along with its column index
+    in a single, one-dimensional array.
+  \item Another array designates the start of each row.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Compressed row storage: example}
+  \[
+    \bm A = \begin{pmatrix}
+      1 & 0 & 0 & 2 \\ 0 & 0 & 4 & 0 \\ 0 & 5 & 0 & 6 \\ 7 & 0 & 0 & 0
+    \end{pmatrix}
+  \]
+  \begin{lstlisting}
+    vals = [1, 2, 4, 5, 6, 7]
+    cols = [0, 3, 2, 1, 3, 0]
+    rowptrs = [0, 2, 3, 5]
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compressed row storage}
+  \begin{itemize}
+  \item The problem with CRS is that inserting a new nonzero element somewhere
+    in the matrix may involve a lot of data shifting.
+  \item Other sparse structures exist that are optimized for insertion but not
+    for matrix-vector operations.
+  \item Various workarounds exist, such as assembling the final CSR structure
+    after all elements have been set, or (in this case) pre-declare the sparsity
+    pattern before inserting values.
+  \item It is necessary to know how many nonzero elements are on each row. For
+    MPI applications, it is also good to know how many nonzero elements are off
+    or on the diagonal.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Declare the sparsity pattern}
+  \begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+    PetscInt first, last;
+    MatGetOwnershipRange(A, &first, &last);
+    PetscInt d_nz = (PetscInt *)
+      malloc((last - first) * sizeof(PetscInt));
+    PetscInt o_nz = (PetscInt *)
+      malloc((last - first) * sizeof(PetscInt));
+
+    for (size_t i = first; i < last; i++) {
+      d_nz[i - first] = 5;
+      o_nz[i - first] = 5;
+    }
+    MatMPIAIJSetPreallocation(
+      A, PETSC_DEFAULT, d_nz, PETSC_DEFAULT, o_nz
+    );
+  \end{lstlisting}
+  Here we have slightly overallocated for the sake of simplicity.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Fully declare the sparsity pattern}
+  \begin{itemize}
+  \item We can also pin the sparsity pattern completely.
+    \begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+PetscInt d_nz = (PetscInt *) malloc(m*m * sizeof(PetscInt));
+int total = 0;
+// count number of nonzeros per row -> d_nz and total
+
+MatSeqAIJSetPreallocation(A, PETSC_DEFAULT, d_nz);
+
+PetscInt col = (PetscInt *) malloc(total * sizeof(PetscInt));
+// compute the actual column indices
+MatSeqAIJSetColumnIndices(A, col);
+    \end{lstlisting}
+  \item This way the matrix format will never change when adding values, which
+    allows for multi-threaded assembly.
+  \item Unfortunately it doesn't work in hybrid mode. (There is no
+    \texttt{MatMPIAIJSetColumnIndices}.)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fill only your own elements}
+  \begin{itemize}
+  \item We can use \texttt{VecGetOwnershipRange} and
+    \texttt{MatGetOwnershipRange} to get the global indices that are assigned to
+    our own process.
+  \item Then, each process can set just those indices.
+  \item Note that in PETSc, a process owns whole \emph{rows} of the matrix, not
+    columns as we have been (often) using in this course.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Out of tree builds}
+  \begin{itemize}
+  \item After celebrating out-of-tree builds, here is an actual example where
+    they are useful.
+  \item We want to compile both in serial and in parallel to compare the
+    results. Therefore, make two build folders. For example:
+    \begin{lstlisting}
+mkdir serial && cd serial
+PETSC_ARCH=linux-gnu-cxx-opt cmake ..
+make
+
+cd .. && mkdir parallel && cd parallel
+PETSC_ARCH=linux-gnu-cxx-opt-mpi cmake ..
+    -DENABLE_MPI=1
+make
+    \end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Command-line arguments}
+  \begin{itemize}
+  \item PETSc has a set of built-in command-line arguments that all programs
+    using PETSc will respect.
+  \item These are read by functions with names like \texttt{XyzSetFromOptions}.
+    We have used a few of them previously in this lecture.
+  \item For instance, if we want to run our code using a Jacobi preconditioner
+    and a GMRES solver, we can do
+    \begin{lstlisting}
+./poisson-petsc-smart 128 -pc_type jacobi
+                          -ksp_type gmres
+    \end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\input{postamble}
