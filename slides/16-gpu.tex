@@ -1,0 +1,504 @@
+\input{preamble}
+
+\title{Graphics programming}
+\author{Eivind Fonn}
+\institute{SINTEF ICT / NTNU}
+\date{March 2016}
+\maketitle
+
+\begin{frame}
+  \frametitle{Graphics programming}
+  \begin{itemize}
+  \item Graphics programming is a field unto itself. We won't study all of it.
+  \item A 3D scene involves a large number of polygons (usually triangles), with
+    associated colors.
+  \item To render it, all points must be transformed from \emph{model space} to
+    \emph{image space}, and the correct color value must be computed for each
+    pixel.
+  \item Several such images must be ready per second.
+  \item Since there are many polygons and pixels, we need a processor with
+    extreme parallel capabilities.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vertex transformation}
+  \begin{itemize}
+  \item Vertices are transformed from model space to image space by multiplying
+    with an \emph{MVP} matrix.
+    \[
+      \bm v_p = \bm P \bm V \bm M \bm v_m
+    \]
+  \item $\bm M$: The \emph{model} matrix transforms from the local coordinate
+    system of a model to the global coordinate system of the scene.
+  \item $\bm V$: The \emph{view} matrix transforms from the global coordinate
+    system to a coordinate system with the camera at the origin.
+  \item $\bm P$: The \emph{perspective} matrix transforms from the camera system
+    to image coordinates. It depends on camera parameters like field of view.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vertex transformation}
+  \begin{itemize}
+  \item Note that each vertex is a four-dimensional vector, and each matrix is
+    $4 \times 4$.
+  \item This is necessary to allow us to do affine transformations, such as
+    translations:
+    \[
+      \begin{pmatrix}
+        1 &   &   & t_x \\
+        & 1 &   & t_y \\
+        &   & 1 & t_z \\
+        &   &   & 1
+      \end{pmatrix}
+      \begin{pmatrix} v_x \\ v_y \\ v_z \\ 1 \end{pmatrix}
+      =
+      \begin{pmatrix} v_x + t_x \\ v_y + t_y \\ v_z + t_z \\ 1 \end{pmatrix}
+    \]
+  \item All necessary transformations can then be encoded as matrix operations.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{OpenGL}
+  \begin{itemize}
+  \item OpenGL (Open Graphics Library) is an API for graphics programming.
+  \item It's a \emph{standard} which must be \emph{implemented} by the driver of
+    a GPU. Therefore there are many OpenGL implementations.
+  \item The standard is developed by the Khronos Group consortium, with members
+    such as AMD, Apple, Google, Intel, Nvidia, Samsung, etc.
+  \item Unlike Direct3D, OpenGL is cross platform.
+  \item Due to be replaced by a newer standard called \emph{Vulkan} which was
+    released very recently.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{``Old'' style OpenGL}
+  \begin{lstlisting}[style=c]
+  glFrustum(left, right, bottom, top, near, far);
+  glRotatef(angle, nx, ny, nz);
+  glTranslatef(dx, dy, dz);
+  // Other matrix operations...
+
+  glBegin(GL_TRANGLES);
+  for (...) {
+    glColor3f(r, g, b);
+    glVertex3f(x, y, z);
+  }
+  glEnd();
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{``Old'' style OpenGL}
+  \begin{itemize}
+  \item The code runs, as usual, on the CPU. Each call to \texttt{glSomething}
+    makes something happen on the GPU.
+  \item Since each vertex requires at least one function call on the CPU
+    \texttt{glVertex}, this style is highly bound by CPU performance.
+  \item Worse, OpenGL is highly stateful, so there's no good way to parallelize
+    on the CPU side either.
+  \item This style is usually called the \emph{fixed function pipeline}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Modern OpenGL}
+  \begin{itemize}
+  \item Modern OpenGL instead uses the \emph{programmable pipeline}.
+  \item This involves writing programs that run on the GPU, which operate on
+    data in particular ways.
+  \item These programs are called \emph{shaders} and are written in the
+    \emph{GLSL} language (OpenGL Shading Language). It looks a lot like C and is
+    compiled at runtime by the driver.
+  \item There are many kinds of shaders. In particular:
+    \begin{itemize}
+    \item Vertex shaders compute the MVP transformation.
+    \item Fragment shaders compute the color of a pixel.
+    \end{itemize}
+  \item The data are allocated and stored on the GPU itself, in its own memory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vertex shader}
+  This is a simple vertex shader.
+  \begin{lstlisting}[style=glsl]
+  attribute vec3 in_coord;
+  attribute vec3 in_color;
+  uniform mat4 transform;
+  varying vec3 f_color;
+
+  void main(void) {
+    gl_Position = transform * vec4(coord, 1.0);
+    f_color = in_color;
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vertex shader}
+  \begin{itemize}
+  \item The shader declares two \emph{attributes} called \texttt{in\_coord} and
+    \texttt{in\_color}. They are 3D vectors and represent the position and
+    color of a vertex.
+  \item Additionally the actual transformation matrix is declared as a
+    \emph{uniform}, which means it is constant.
+  \item The \emph{varying} declaration of \texttt{f\_color} means that it is a
+    parameter to the fragment shader, which will be interpolated between
+    vertices.
+  \item Finally, the vertex shader defines a function \texttt{main} whose
+    purpose it is to set the varying \texttt{f\_color} and the four-dimensional
+    vector \texttt{gl\_Position} (the final position of the vertex).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Fragment shader}
+  The fragment shader is simpler.
+  \begin{lstlisting}[style=glsl]
+  varying vec3 f_color;
+
+  void main(void) {
+    gl_FragColor = vec3(f_color, 1.0);
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A GLSL program}
+  \begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+  GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vs, 1, vs_source, NULL);
+  glCompileShader(vs);
+
+  GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fs, 1, fs_source, NULL);
+  glCompileShader(fs);
+
+  GLuint program = glCreateProgram();
+  glAttachShader(program, vs);
+  glAttachShader(program, fs);
+  glLinkProgram(program);
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Storing data in graphics memory}
+  \begin{lstlisting}[style=c, basicstyle=\ttfamily\footnotesize]
+  GLuint coords;
+  glGenBuffers(1, &coords);
+  glBindBuffer(GL_ARRAY_BUFFER, coords);
+  glBufferData(GL_ARRAY_BUFFER, size, ptr, GL_STATIC_DRAW);
+
+  GLuint colors;
+  glGenBuffers(1, &colors);
+  glBindBuffer(GL_ARRAY_BUFFER, colors);
+  glBufferData(GL_ARRAY_BUFFER, size, ptr, GL_STATIC_DRAW);
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Rendering a frame}
+  \begin{lstlisting}[style=c, basicstyle=\ttfamily\scriptsize]
+glUseProgram(program);
+GLint a_coord = glGetAttribLocation(program, "in_coord");
+GLint a_color = glGetAttribLocation(program, "in_color");
+GLint u_trans = glGetUniformLocation(program, "transform");
+
+glEnableVertexAttribArray(a_coord);
+glBindBuffer(GL_ARRAY_BUFFER, coords);
+glVertexAttribPointer(a_coord, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+glEnableVertexAttribArray(a_color);
+glBindBuffer(GL_ARRAY_BUFFER, colors);
+glVertexAttribPointer(a_color, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+glUniformMatrix4fv(u_trans, 1, GL_FALSE, ptr);
+
+glDrawArrays(GL_TRIANGLES, 0, 3);
+
+glDisableVertexAttribArray(a_color);
+glDisableVertexAttribArray(a_coord);
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rendering a frame}
+  \begin{itemize}
+  \item For each frame, the CPU must
+    \begin{itemize}
+    \item Enable each attribute in the GLSL program
+    \item Bind each buffer with source data
+    \item Point each attribute to the correct buffer
+    \item Calculate and set the value of the uniform transformation matrix
+    \item Call the drawing function
+    \item Disable the attributes
+    \end{itemize}
+  \item It seems like a lot but it scales very well with the size of the models.
+  \item All the other things can happen once, during setup:
+    \begin{itemize}
+    \item Compiling and linking the GLSL program
+    \item Allocating GPU memory and copying data
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{GPU design}
+  \begin{itemize}
+  \item The needs of graphics programming dictate how a GPU is designed.
+  \item Extreme parallelism: a GPU can have thousands of cores.
+  \item GPUs are optimized for performing the same operations on each core, in a
+    SIMD-like fashion.
+  \item Each core is quite minimal: only an integer and a floating point unit,
+    for example.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Modern OpenGL}
+  \begin{itemize}
+  \item The programmable pipeline is quite flexible.
+  \item Drawing pictures is a noble goal but we want more.
+  \item Compute shaders are designed for arbitrary computations on the GPU.
+  \item They can be attached to a GLSL program, but take no input and produce no
+    output. A compute shader must fetch the data it needs on its own.
+  \item Compute shaders are not invoked during the regular rendering pipeline.
+    They must be explicitly invoked using \texttt{glDispatchCompute} from the
+    CPU.
+  \item All this makes compute shaders somewhat awkward. (As if OpenGL wasn't
+    already awkward enough.)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{CUDA and OpenCL}
+  \begin{itemize}
+  \item Enter: CUDA and OpenCL.
+  \item These are APIs for running more general-purpose programs on GPUs.
+  \item OpenCL is a Khronos standard while CUDA is Nvidia's own model.
+  \item AMD GPU drivers typically support OpenCL 2.0 while Nvidia drivers
+    support OpenCL 1.1 (possibly to push people to CUDA).
+  \item Here we will be looking at CUDA, mostly because I use Nvidia GPUs.
+    (Nvidia drivers on Linux have been better than AMD drivers for a long time.)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{CUDA}
+  \begin{itemize}
+  \item A CUDA program contains that executes on the CPU (the \emph{host}) and
+    on the GPU (the \emph{device}).
+  \item The CUDA compiler (\texttt{nvcc}) functions as a wrapper that compiles
+    the device code on its own and passes the host code to a regular C compiler.
+    It is invoked like any other compiler.
+  \item The resulting program can be run like any other program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Hello CUDA}
+  \begin{lstlisting}[style=cuda]
+  __global__ void hello() { }
+
+  int main() {
+    hello<<<1,1>>>();
+    return 0;
+  }
+  \end{lstlisting}
+  \begin{itemize}
+  \item The \texttt{\_\_global\_\_} qualifier signals that the \texttt{hello}
+    function runs on the device, but can be called from the host.
+  \item A function with \texttt{\_\_device\_\_} runs on, and is called from the
+    device.
+  \item To call a device function from host code, we invoke it in a particular
+    way, with triple angle brackets. We'll come back to this later.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addition on the GPU}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+  __global__ void add(int *a, int *b, int *c) {
+    *c = *a + *b;
+  }
+
+  int main() {
+    int *d_a, *d_b, *d_c;
+    cudaMalloc((void**)&d_a, sizeof(int));
+    // Same for b and c
+
+    int a = 2, b = 7, c;
+    cudaMemcpy(d_a, &a, sizeof(int), cudaMemcpyHostToDevice);
+    // Same for b
+
+    add<<<1,1>>>(d_a, d_b, d_c);
+
+    cudaMemcpy(d_c, &c, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+
+    printf("%d\n", c);
+    return 0;
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Memory}
+  \begin{itemize}
+  \item Copying data to the GPU involves allocating memory there (with
+    \texttt{cudaMalloc}) and copying from the host (with \texttt{cudaMemcpy}).
+  \item These functions are vaguely similar to regular C \texttt{malloc} and
+    \texttt{memcpy}.
+  \item Note that we have pointers to device memory stored in host variables
+    (\texttt{d\_a} etc.) This is fine, so long as you don't dereference device
+    pointers in host code.
+  \item \texttt{\_\_global\_\_} functions must have \texttt{void} return types,
+    so we must copy the result back.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallelism terms}
+  \begin{itemize}
+  \item A \texttt{\_\_global\_\_} function is called a \emph{kernel}.
+  \item A kernel, when invoked, has a certain number of \emph{blocks} organized
+    in a \emph{grid}. The grid may be as much as three-dimensional, but here we
+    will stay with one-dimensional grids.
+  \item Each block, in turn, contain a certain number of \emph{threads} which
+    are also organized in a grid, which may be of different size than the
+    previously mentioned grid.
+  \item Threads are grouped together in \emph{warps} for execution on the GPU.
+    The size of a warp depends on the microarchitecture of the GPU in question.
+    E.g. for Nvidia Fermi GPUs, a warp has 32 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallelism}
+  \begin{itemize}
+  \item The two numbers in angle brackets specify the number of blocks in the
+    grid, and the number of threads per block.
+  \item So far, we have seen code where a single block with a single thread is
+    executed.
+  \item Let's try some actual parallelism.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector addition on the GPU (blocks)}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+  __global__ void add(int *a, int *b, int *c) {
+    c[blockIdx.x] = a[blockIdx.x] + b[blockIdx.x];
+  }
+
+
+  int main() {
+    int *a, *b, *c, N;  // Assume set
+    int size = N * sizeof(int);
+
+    int *d_a, *d_b, *d_c;
+    cudaMalloc((void**)&d_a, size);  // Same for b and c
+
+    cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+
+    add<<<N,1>>>(d_a, d_b, d_c);
+
+    cudaMemcpy(d_c, &c, size, cudaMemcpyDeviceToHost);
+    cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+
+    return 0;
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector addition on the GPU (threads)}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+  __global__ void add(int *a, int *b, int *c) {
+    c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
+  }
+
+
+  int main() {
+    int *a, *b, *c, N;  // Assume set
+    int size = N * sizeof(int);
+
+    int *d_a, *d_b, *d_c;
+    cudaMalloc((void**)&d_a, size);  // Same for b and c
+
+    cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+
+    add<<<1,N>>>(d_a, d_b, d_c);
+
+    cudaMemcpy(d_c, &c, size, cudaMemcpyDeviceToHost);
+    cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+
+    return 0;
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector addition on the GPU (both)}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+  __global__ void add(int *a, int *b, int *c) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    c[idx] = a[idx] + b[idx];
+  }
+
+  int main() {
+    int *a, *b, *c, M, N;  // Assume set
+    int size = M * N * sizeof(int);
+
+    int *d_a, *d_b, *d_c;
+    cudaMalloc((void**)&d_a, size);  // Same for b and c
+
+    cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+
+    add<<<M,N>>>(d_a, d_b, d_c);
+
+    cudaMemcpy(d_c, &c, size, cudaMemcpyDeviceToHost);
+    cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+
+    return 0;
+  }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Blocks, threads and warps}
+  \begin{itemize}
+  \item What are the purposes of blocks and threads?
+  \item Unlike blocks, threads can communicate and synchronize between each
+    other. They can also share memory.
+  \item In a way, a block is like a process in MPI and a thread is like a thread
+    in OpenMP.
+  \item Like in OpenMP, there is a limit to the number of threads per block. On
+    current GPUs, that limit is 1024. Practical concerns may make this limit
+    lower, depending on your problem.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Blocks, threads and warps}
+  \begin{itemize}
+  \item A \emph{warp} is a group of 32 threads executed together on a single
+    multiprocessor.
+  \item Each thread in a warp always execute the same instruction. If different
+    threads take different execution paths, all threads in the warp execute
+    \emph{all} paths, only with some of them disabled when appropriate.
+  \item A typical performance problem is if different threads in a warp take
+    different execution paths.
+  \item Try to write your code so that threads close to each other do not take
+    diverging execution paths.
+  \end{itemize}
+\end{frame}
+
+\input{postamble}
