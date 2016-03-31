@@ -473,6 +473,21 @@ glDisableVertexAttribArray(a_coord);
 \end{frame}
 
 \begin{frame}
+  \frametitle{Asynchronicity}
+  \begin{itemize}
+  \item Note that most CUDA calls are asynchronous.
+  \item In other words, host code continues running \emph{while} the GPU
+    executes the device code.
+  \item This is usually not a problem since CUDA calls block until all preceding
+    CUDA calls have finished (i.e. CUDA enforces its own synchronization).
+  \item \texttt{cudaMemcpy} \emph{does} block until completion.
+  \item If additional synchronization is needed, you can use
+    \texttt{cudaDeviceSynchronize()}, which is a CUDA call that does nothing
+    \emph{except} synchronize.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Blocks, threads and warps}
   \begin{itemize}
   \item What are the purposes of blocks and threads?
@@ -498,6 +513,102 @@ glDisableVertexAttribArray(a_coord);
     different execution paths.
   \item Try to write your code so that threads close to each other do not take
     diverging execution paths.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: stencil sum}
+  \begin{itemize}
+  \item This example is shamelessly stolen from Nvidia.
+  \item Assume an input array $x_i$, $-R \leq i < N+R$.
+  \item We want to compute the output array $y_i$, $0 \leq i < N$ such that
+    \[
+      y_i = \sum_{i-R \leq j \leq i+R} x_j
+    \]
+    that is to say, each element in $y$ is the sum of $R$ neighboring elements
+    in $x$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Naive implementation}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+__global__ void stencil(double *in, double *out) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    double result = 0.0;
+    for (int off = -RADIUS; off <= RADIUS; off++)
+        result += in[idx + off];
+    out[idx] = result;
+}
+  \end{lstlisting}
+  If each thread computes one output element, then it needs to read $2R+1$ input
+  elements. Most input elements are read by $2R+1$ different threads, so it
+  makes sense to share some work between threads.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Shared implementation}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+__global__ void stencil(double *in, double *out) {
+    __shared__ int temp[BLOCKSIZE + 2*RADIUS];
+    int gidx = threadIdx.x + blockIdx.x * blockDim.x;
+    int lidx = threadIdx.x + RADIUS;
+
+    temp[lidx] = in[gidx];
+    if (threadIdx.x < RADIUS) {
+        temp[lidx - RADIUS] = in[gidx - RADIUS];
+        tmep[lidx + BLOCKSIZE] = in[gidx + BLOCKSIZE];
+    }
+
+    double result = 0.0;
+    for (int off = -RADIUS; off <= RADIUS; off++)
+        result += temp[ldx + off];
+    out[gidx] = result;
+}
+  \end{lstlisting}
+  Problem: we must ensure that each thread in the block has finished fetching
+  data before we start using it.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Synchronized implementation}
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+__global__ void stencil(double *in, double *out) {
+    __shared__ int temp[BLOCKSIZE + 2*RADIUS];
+    int gidx = threadIdx.x + blockIdx.x * blockDim.x;
+    int lidx = threadIdx.x + RADIUS;
+
+    temp[lidx] = in[gidx];
+    if (threadIdx.x < RADIUS) {
+        temp[lidx - RADIUS] = in[gidx - RADIUS];
+        tmep[lidx + BLOCKSIZE] = in[gidx + BLOCKSIZE];
+    }
+
+    __syncthreads();
+
+    double result = 0.0;
+    for (int off = -RADIUS; off <= RADIUS; off++)
+        result += temp[ldx + off];
+    out[gidx] = result;
+}
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Synchronized implementation}
+  \begin{itemize}
+  \item Note that our threads do not all follow the same execution path:
+  \begin{lstlisting}[style=cuda, basicstyle=\ttfamily\scriptsize]
+    if (threadIdx.x < RADIUS) {
+        temp[lidx - RADIUS] = in[gidx - RADIUS];
+        tmep[lidx + BLOCKSIZE] = in[gidx + BLOCKSIZE];
+    }
+  \end{lstlisting}
+  \item In this case it's not a problem, since we have to synchronize threads
+    immediately afterwards anyway: all threads will have to wait for the slowest
+    ones.
+  \item In other words, the execution paths aren't \emph{divergent}, it's just
+    that some involve \emph{more} instructions than others.
   \end{itemize}
 \end{frame}
 
